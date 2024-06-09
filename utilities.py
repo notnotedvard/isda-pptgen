@@ -10,6 +10,7 @@ import copy
 from moviepy.editor import VideoFileClip
 from lxml import etree
 from PIL import Image
+from copy_slides import duplicate_slide
 
 # defining the template slides in the order they appear in the template
 TEMPLATE = (
@@ -65,18 +66,18 @@ def autoplay_media(media):
     cond = xpath(el_cnt.getparent().getparent(), './/p:cond')[0]
     cond.set('delay', '0')
 
-def duplicate_slide(presentation, slide_index):
-    """Duplicates a slide and returns the new slide."""
-    slide_to_duplicate = presentation.slides[slide_index]
-    layout = slide_to_duplicate.slide_layout
-    new_slide = presentation.slides.add_slide(layout)
+# def old_duplicate_slide(presentation, slide_index):
+#     """Duplicates a slide and returns the new slide."""
+#     slide_to_duplicate = presentation.slides[slide_index]
+#     layout = slide_to_duplicate.slide_layout
+#     new_slide = presentation.slides.add_slide(layout)
 
-    for shape in slide_to_duplicate.shapes:
-        el = shape.element
-        new_el = copy.deepcopy(el)
-        new_slide.shapes._spTree.insert_element_before(new_el, 'p:extLst')
+#     for shape in slide_to_duplicate.shapes:
+#         el = shape.element
+#         new_el = copy.deepcopy(el)
+#         new_slide.shapes._spTree.insert_element_before(new_el, 'p:extLst')
 
-    return new_slide
+#     return new_slide
 
 def delete_template_slides(presentation:Presentation):
     """Deletes the template slides from the presentation. (the first ~7 slides)"""
@@ -85,7 +86,7 @@ def delete_template_slides(presentation:Presentation):
 
 def insert_logo_slide(presentation:Presentation):
     """Inserts the logo slide."""
-    slide = duplicate_slide(presentation, TEMPLATE.index("logo_slide"))
+    duplicate_slide(presentation, TEMPLATE.index("logo_slide"))
 
 def insert_video_slide(presentation:Presentation, video_path:str, caption:str=""):
     """Inserts a slide with a video and a caption."""
