@@ -3,3 +3,5 @@ venv
 .vscode
 output.pptx
 hymns/*
+~$*
+__pycache__/*

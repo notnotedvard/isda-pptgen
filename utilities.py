@@ -4,17 +4,23 @@ from pptx import Presentation
 from pptx.util import Pt, Inches
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
+from pptx.enum.text import MSO_ANCHOR # vertical alignment of text
 from pptx.enum.shapes import MSO_SHAPE
 import copy
+from moviepy.editor import VideoFileClip
+from lxml import etree
+from PIL import Image
 
-VIDEO_WITH_CAPTION_SLIDE = 1
+LOGO_SLIDE = 0
+MEDIA_WITH_CAPTION_SLIDE = 1
 SIMPLE_TITLE_SLIDE = 2
 SONG_TITLE_SLIDE = 3
 CHORUS_SLIDE = 4
 VERSE_SLIDE = 5
+END_SLIDE = 6
 
-def insert_custom_run(pragraph, text:str, size:int, colored:bool=False):
-    """Creates a run with following settings:
+def insert_text(pragraph, text:str, size:int, colored:bool=False):
+    """Creates a 'run' (text with formatting) with the following settings:
     - font size: 32pt (0), 44pt (1), 60pt (2)
     - font color: white or rgb(242, 207, 248) (colored)
     - font name: Loos Normal Medium
@@ -40,6 +46,22 @@ def insert_custom_run(pragraph, text:str, size:int, colored:bool=False):
     custom_run.font.name = "Loos Normal Medium"
     custom_run.alignment = PP_ALIGN.CENTER
 
+
+def autoplay_media(media):
+    """Sets the media to autoplay in a really ugly way that I don't understand but it works."""
+    def xpath(el, query):
+        """Helper function to find elements in the XML tree."""
+        nsmap = {'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}
+        return etree.ElementBase.xpath(el, query, namespaces=nsmap)
+    
+    el_id = xpath(media.element, './/p:cNvPr')[0].attrib['id']
+    el_cnt = xpath(
+        media.element.getparent().getparent().getparent(),
+        './/p:timing//p:video//p:spTgt[@spid="%s"]' % el_id,
+    )[0]
+    cond = xpath(el_cnt.getparent().getparent(), './/p:cond')[0]
+    cond.set('delay', '0')
+
 def duplicate_slide(presentation, slide_index):
     """Duplicates a slide and returns the new slide."""
     slide_to_duplicate = presentation.slides[slide_index]
@@ -50,14 +72,81 @@ def duplicate_slide(presentation, slide_index):
         el = shape.element
         new_el = copy.deepcopy(el)
         new_slide.shapes._spTree.insert_element_before(new_el, 'p:extLst')
-        
+
     return new_slide
 
 def delete_template_slides(presentation:Presentation):
-    """Deletes the template slides from the presentation."""
-    # delete the 7 first slides
+    """Deletes the template slides from the presentation. (the first 7 slides)"""
     for _ in range(7):
         presentation.slides._sldIdLst.remove(presentation.slides._sldIdLst[0])
+
+def insert_logo_slide(presentation:Presentation):
+    """Inserts the logo slide."""
+    duplicate_slide(presentation, LOGO_SLIDE)
+
+def insert_video_slide(presentation:Presentation, video_path:str, caption:str=""):
+    """Inserts a slide with a video and a caption."""
+    slide = duplicate_slide(presentation, MEDIA_WITH_CAPTION_SLIDE)
+    caption = caption.strip()
+
+    # getting size and aspect ratio of the video
+    clip = VideoFileClip(video_path)
+    aspect_ratio = clip.size[0] / clip.size[1]
+    height = presentation.slide_height.inches
+    width = presentation.slide_height.inches * aspect_ratio
+    left = (presentation.slide_width.inches - width) / 2
+
+    # changing the caption
+    if caption != "":
+        for shape in slide.shapes:
+            if shape.name == "caption":
+                shape.text_frame.clear()
+                caption_paragraph = shape.text_frame.paragraphs[0]
+                caption_paragraph.alignment = PP_ALIGN.CENTER
+                insert_text(caption_paragraph, caption, size=0, colored=False)
+    else:
+        # removing the caption shape if there's no caption
+        for shape in slide.shapes:
+            if shape.name == "caption":
+                slide.shapes._spTree.remove(shape._element)
+
+    # addding the video
+    video = slide.shapes.add_movie(video_path, Inches(left), 0, Inches(width), Inches(height), poster_frame_image="gyp-thumbnail.png")
+    slide.shapes._spTree.remove(video._element)
+    slide.shapes._spTree.insert(2, video._element)
+    autoplay_media(video)
+
+def insert_image_slide(presentation:Presentation, image_path:str, caption:str=""):
+    """Inserts a slide with an image and a caption."""
+    slide = duplicate_slide(presentation, MEDIA_WITH_CAPTION_SLIDE)
+    caption = caption.strip()
+
+    # getting size and aspect ratio of the image
+    img = Image.open(image_path)
+    width, height = img.size
+    aspect_ratio = width / height
+    height = presentation.slide_height.inches
+    width = presentation.slide_height.inches * aspect_ratio
+    left = (presentation.slide_width.inches - width) / 2
+
+    # changing the caption
+    if caption != "":
+        for shape in slide.shapes:
+            if shape.name == "caption":
+                shape.text_frame.clear()
+                caption_paragraph = shape.text_frame.paragraphs[0]
+                caption_paragraph.alignment = PP_ALIGN.CENTER
+                insert_text(caption_paragraph, caption, size=0, colored=False)
+    else:
+        # removing the caption shape if there's no caption
+        for shape in slide.shapes:
+            if shape.name == "caption":
+                slide.shapes._spTree.remove(shape._element)
+
+    # adding the image
+    image = slide.shapes.add_picture(image_path, Inches(left), 0, Inches(width), Inches(height))
+    slide.shapes._spTree.remove(image._element)
+    slide.shapes._spTree.insert(2, image._element)
 
 
 def insert_song_title_slide(presentation:Presentation, number:int, title:str):
@@ -69,10 +158,10 @@ def insert_song_title_slide(presentation:Presentation, number:int, title:str):
     for shape in slide.shapes:
         if shape.name == "song_title":
             shape.text_frame.clear()
-            title_paragraph = shape.text_frame.add_paragraph()
+            title_paragraph = shape.text_frame.paragraphs[0]
             title_paragraph.alignment = PP_ALIGN.CENTER
-            insert_custom_run(title_paragraph, f"#{number}", size=0, colored=False)
-            insert_custom_run(title_paragraph, f"\n{title}", size=2, colored=False)
+            insert_text(title_paragraph, f"#{number}", size=0, colored=False)
+            insert_text(title_paragraph, f"\n{title}", size=2, colored=False)
 
 def insert_chorus_slide(presentation:Presentation, verse_name:str, text:str, last_slide:bool=False):
     """Inserts a slide with the chorus of the song."""
@@ -82,10 +171,10 @@ def insert_chorus_slide(presentation:Presentation, verse_name:str, text:str, las
     for shape in slide.shapes:
         if shape.name == "chorus":
             shape.text_frame.clear()
-            chorus_paragraph = shape.text_frame.add_paragraph()
+            chorus_paragraph = shape.text_frame.paragraphs[0]
             chorus_paragraph.alignment = PP_ALIGN.CENTER
-            insert_custom_run(chorus_paragraph, verse_name, size=0, colored=True)
-            insert_custom_run(chorus_paragraph, f"\n{text}", size=1, colored=False)
+            insert_text(chorus_paragraph, verse_name, size=0, colored=True)
+            insert_text(chorus_paragraph, f"\n{text}", size=1, colored=False)
 
     if last_slide:
         # get size of the slide in inches

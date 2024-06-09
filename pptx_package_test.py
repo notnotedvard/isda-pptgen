@@ -7,17 +7,6 @@ from pptx.util import Pt
 from pptx.dml.color import RGBColor
 from utilities import *
 
-# Defining constants
-TITLE_LAYOUT = 0
-TITLE_AND_CONTENT_LAYOUT = 1
-SECTION_HEADER_LAYOUT = 2
-TWO_CONTENT_LAYOUT = 3
-COMPARISON_LAYOUT = 4
-TITLE_ONLY_LAYOUT = 5
-BLANK_LAYOUT = 6
-CONTENT_WITH_CAPTION_LAYOUT = 7
-PICTURE_WITH_CAPTION_LAYOUT = 8
-
 
 # Create a presentation object
 prs = Presentation("template.pptx")
@@ -44,8 +33,9 @@ prs = Presentation("template.pptx")
 # subtitle = slide.placeholders[1]
 # subtitle.text = "This is a subtitle"
 
-insert_chorus_slide(prs, "Verse 1", "This is a verse")
-insert_chorus_slide(prs, "Refrain", "This is the last refrain", True)
+insert_video_slide(prs, "gyp.mp4", "Never Would I")
+insert_song_title_slide(prs, 1, "Never Would I")
+insert_image_slide(prs, "gyp-thumbnail.png", "")
 
 delete_template_slides(prs)
 
