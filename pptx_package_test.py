@@ -38,6 +38,12 @@ insert_song_title_slide(prs, 1, "Never Would I")
 insert_image_slide(prs, "gyp-thumbnail.png", "")
 insert_logo_slide(prs)
 insert_simple_title_slide(prs, "This is a simple title slide")
+insert_scripture_slide(prs, "reference", (
+    ("1", "This is the first verse."),
+    ("2", "This is the second verse."),
+    ("3", "This is the third verse.")
+), "\n")
+insert_end_slide(prs)
 
 delete_template_slides(prs)
 

@@ -4,9 +4,8 @@ from pptx import Presentation
 from pptx.util import Pt, Inches
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
-from pptx.enum.text import MSO_ANCHOR # vertical alignment of text
+# from pptx.enum.text import MSO_ANCHOR # vertical alignment of text
 from pptx.enum.shapes import MSO_SHAPE
-import copy
 from moviepy.editor import VideoFileClip
 from lxml import etree
 from PIL import Image
@@ -19,18 +18,28 @@ TEMPLATE = (
     "simple_title_slide",
     "song_title_slide",
     "chorus_slide",
-    "verse_slide",
+    "scripture_slide",
     "end_slide",
 )
 
-def insert_text(pragraph, text:str, size:int, colored:bool=False):
+def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bool=False):
     """Creates a 'run' (text with formatting) with the following settings:
     - font size: 32pt (0), 44pt (1), 60pt (2)
     - font color: white or rgb(242, 207, 248) (colored)
     - font name: Loos Normal Medium
     - alignment: center
+    - superscript: False by default
     Does not return anything, modifies the paragraph object directly.
     """
+    def set_subscript(font):
+        font._element.set('baseline', '-25000')
+
+    def set_superscript(font):
+        font._element.set('baseline', '30000')
+
+    def set_strikethrough(font):
+        font._element.set('strike','sngStrike')
+
     text = str(text)
 
     match size:
@@ -50,6 +59,9 @@ def insert_text(pragraph, text:str, size:int, colored:bool=False):
     custom_run.font.name = "Loos Normal Medium"
     custom_run.alignment = PP_ALIGN.CENTER
 
+    if superscript:
+        set_superscript(custom_run.font)
+
 
 def autoplay_media(media):
     """Sets the media to autoplay in a really ugly way that I don't understand but it works."""
@@ -65,19 +77,6 @@ def autoplay_media(media):
     )[0]
     cond = xpath(el_cnt.getparent().getparent(), './/p:cond')[0]
     cond.set('delay', '0')
-
-# def old_duplicate_slide(presentation, slide_index):
-#     """Duplicates a slide and returns the new slide."""
-#     slide_to_duplicate = presentation.slides[slide_index]
-#     layout = slide_to_duplicate.slide_layout
-#     new_slide = presentation.slides.add_slide(layout)
-
-#     for shape in slide_to_duplicate.shapes:
-#         el = shape.element
-#         new_el = copy.deepcopy(el)
-#         new_slide.shapes._spTree.insert_element_before(new_el, 'p:extLst')
-
-#     return new_slide
 
 def delete_template_slides(presentation:Presentation):
     """Deletes the template slides from the presentation. (the first ~7 slides)"""
@@ -203,3 +202,35 @@ def insert_chorus_slide(presentation:Presentation, verse_name:str, text:str, las
         # remove outline
         square.line.fill.background()
 
+def insert_scripture_slide(presentation:Presentation, reference:str, text:tuple, verse_separator:str=" "):
+    """Inserts a slide with the verses.
+    Text need to be provided like this:
+    (
+        ("1", "This is the first verse."),
+        ("2", "This is the second verse."),
+        ("3", "This is the third verse.")
+    )
+    """
+    slide = duplicate_slide(presentation, TEMPLATE.index("scripture_slide"))
+
+    # changing the contents of the slide
+    for shape in slide.shapes:
+        if shape.name == "scripture":
+            shape.text_frame.clear()
+            verse_paragraph = shape.text_frame.paragraphs[0]
+            verse_paragraph.alignment = PP_ALIGN.CENTER
+            for verse in text:
+                if verse[0] != "":
+                    if verse[0] != text[0][0]:
+                        insert_text(verse_paragraph, verse_separator, size=1, colored=False)
+                    insert_text(verse_paragraph, verse[0]+' ', size=1, colored=True, superscript=True)
+                insert_text(verse_paragraph, verse[1], size=1, colored=False)
+        elif shape.name == "reference":
+            shape.text_frame.clear()
+            reference_paragraph = shape.text_frame.paragraphs[0]
+            reference_paragraph.alignment = PP_ALIGN.CENTER
+            insert_text(reference_paragraph, reference, size=0, colored=True)
+
+def insert_end_slide(presentation:Presentation):
+    """Inserts the end slide."""
+    duplicate_slide(presentation, TEMPLATE.index("end_slide"))
