@@ -9,7 +9,7 @@ from pptx.enum.shapes import MSO_SHAPE
 from moviepy.editor import VideoFileClip
 from lxml import etree
 from PIL import Image
-from copy_slides import duplicate_slide
+from slide_duplication_utility import duplicate_slide
 
 # defining the template slides in the order they appear in the template
 TEMPLATE = (
@@ -21,6 +21,10 @@ TEMPLATE = (
     "scripture_slide",
     "end_slide",
 )
+
+print("Using structure of template :")
+for i, slide in enumerate(TEMPLATE):
+    print(f"{i} : {slide}")
 
 def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bool=False):
     """Creates a 'run' (text with formatting) with the following settings:

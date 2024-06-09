@@ -3,9 +3,7 @@ Me trying to learn how to generate powerpoint slides using python
 """
 
 from pptx import Presentation
-from pptx.util import Pt
-from pptx.dml.color import RGBColor
-from utilities import *
+from pptx_builder import *
 
 presentation = Presentation("template.pptx")
 insert_video_slide(presentation, "gyp.mp4", "Never Would I")
