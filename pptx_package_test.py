@@ -36,6 +36,8 @@ prs = Presentation("template.pptx")
 insert_video_slide(prs, "gyp.mp4", "Never Would I")
 insert_song_title_slide(prs, 1, "Never Would I")
 insert_image_slide(prs, "gyp-thumbnail.png", "")
+insert_logo_slide(prs)
+insert_simple_title_slide(prs, "This is a simple title slide")
 
 delete_template_slides(prs)
 
