@@ -126,6 +126,7 @@ def duplicate_slide(ppt, slide_index: int):
     """
     Duplicate the slide with the given number in presentation.
     Adds the new slide by default at the end of the presentation.
+    Does not copy videos, background images, and other complex objects.
 
     :param ppt:
     :param slide_index: Slide number
