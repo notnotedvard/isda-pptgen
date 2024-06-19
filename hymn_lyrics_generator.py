@@ -1,7 +1,7 @@
 """This script generates a PowerPoint presentation with the lyrics of a hymn."""
 
 import sqlite3
-from utilities import *
+from pptx_builder import *
 from pptx import Presentation
 import time
 
