@@ -1,11 +1,11 @@
-"""This script generates a PowerPoint presentation with the lyrics of a hymn."""
+"""This script generates a PowerPoint presentation with the lyrics of a hymn based on a template pptx file."""
 
 import sqlite3
 from pptx_builder import *
 from pptx import Presentation
 import time
 
-db = sqlite3.connect('hymns-copy.sqlite')
+db = sqlite3.connect('../SMMS/external_data/hymns.sqlite')
 cursor = db.cursor()
 number_of_hymns = cursor.execute("SELECT COUNT(*) FROM hymns").fetchone()[0]
 start_time = time.time()
