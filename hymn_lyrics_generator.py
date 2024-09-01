@@ -5,6 +5,9 @@ from pptx_builder import *
 from pptx import Presentation
 import time
 
+# please update the path to the hymns.sqlite file if necessary
+# please create the hymns folder in the same directory as this script
+
 db = sqlite3.connect('../SMMS/external_data/hymns.sqlite')
 cursor = db.cursor()
 number_of_hymns = cursor.execute("SELECT COUNT(*) FROM hymns").fetchone()[0]
