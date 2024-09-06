@@ -5,7 +5,7 @@ from pptx_builder import *
 from pptx import Presentation
 import time
 
-db = sqlite3.connect('../SMMS/external_data/hymns.sqlite')
+db = sqlite3.connect('hymns.sqlite')
 cursor = db.cursor()
 number_of_hymns = cursor.execute("SELECT COUNT(*) FROM hymns").fetchone()[0]
 start_time = time.time()
@@ -27,8 +27,8 @@ for hymn_number in range(1, number_of_hymns + 1):
         
         if len(refrains) == 0: # if there are no refrains, add verses one by one
             for verse in verses[:-1]:
-                insert_chorus_slide(template, verse[1], verse[0])
-            insert_chorus_slide(template, verses[-1][1], verses[-1][0], True)
+                insert_smart_chorus_slide(template, verse[1], verse[0])
+            insert_smart_chorus_slide(template, verses[-1][1], verses[-1][0], True)
         else:
             # act according to refrain positions
             # 0 indicates that the hymn starts with a refrain (ex: ?)
@@ -40,27 +40,24 @@ for hymn_number in range(1, number_of_hymns + 1):
             hymn_refrain = ""
             for refrain in refrains:
                 if refrain[1] == 0:
-                    insert_chorus_slide(template, "Refrain", refrain[0])
+                    insert_smart_chorus_slide(template, "Refrain", refrain[0])
                     hymn_refrain = refrain[0]
                 elif refrain[1] == 1:
                     hymn_refrain = refrain[0]
                 elif refrain[1] == 2:
                     end_refrain = refrain[0]
             for verse_index, verse in enumerate(verses):
-                insert_chorus_slide(template, verse[1], verse[0])
+                insert_smart_chorus_slide(template, verse[1], verse[0])
                 if verse_index == len(verses) - 1:
                     if end_refrain != "":
                         # if it's the last verse and there's an end refrain
-                        insert_chorus_slide(template, "Refrain", end_refrain, True)
+                        insert_smart_chorus_slide(template, "Refrain", end_refrain, True)
                     else:
                         # if it's the last verse and there's no end refrain
-                        insert_chorus_slide(template, "Refrain", hymn_refrain, True)
+                        insert_smart_chorus_slide(template, "Refrain", hymn_refrain, True)
                 else:
                     # if everything is normal
-                    insert_chorus_slide(template, "Refrain", hymn_refrain)
-
-
-
+                    insert_smart_chorus_slide(template, "Refrain", hymn_refrain)
 
         delete_template_slides(template)
         template.save(f"hymns/{hymn_number:03} - {hymn_name}.pptx")
