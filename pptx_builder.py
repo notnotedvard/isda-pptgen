@@ -91,7 +91,7 @@ def insert_logo_slide(presentation:Presentation):
     """Inserts the logo slide."""
     duplicate_slide(presentation, TEMPLATE.index("logo_slide"))
 
-def insert_video_slide(presentation:Presentation, video_path:str, caption:str=""):
+def insert_video_slide(presentation:Presentation, video_path:str, thumbnail_path:str, caption:str=""):
     """Inserts a slide with a video and a caption."""
     slide = duplicate_slide(presentation, TEMPLATE.index("media_with_caption_slide"))
     caption = caption.strip()
@@ -118,7 +118,7 @@ def insert_video_slide(presentation:Presentation, video_path:str, caption:str=""
                 slide.shapes._spTree.remove(shape._element)
 
     # addding the video
-    video = slide.shapes.add_movie(video_path, Inches(left), 0, Inches(width), Inches(height), poster_frame_image="gyp-thumbnail.png")
+    video = slide.shapes.add_movie(video_path, Inches(left), 0, Inches(width), Inches(height), poster_frame_image=thumbnail_path)
     slide.shapes._spTree.remove(video._element)
     slide.shapes._spTree.insert(2, video._element)
     autoplay_media(video)
