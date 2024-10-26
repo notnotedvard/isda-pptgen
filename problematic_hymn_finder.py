@@ -45,11 +45,11 @@ for element in enumerate(elements):
     HAS_MANUAL_SPLIT_FLAG = False # if the verse has been manually split, it does not need to be counted as having more than 8 lines
     for line_number, line in enumerate(element[1][1].split("\n")): # split the text into lines
         if len(line) > MAX_LINE_LENGHT: # if line is longer than MAX_LINE_LENGHT characters
-            pass
-            # add_problematic_hymn(element_hymn_number, f"{element_type} {element[1][2]} line {line_number+1} is too long. ({len(line)} characters)")
+            # pass
+            add_problematic_hymn(element_hymn_number, f"{element_type} {element[1][2]} line {line_number+1} is too long. ({len(line)} characters)")
         if line.strip() != line: # if line has leading/trailing whitespace
-            pass
-            # add_problematic_hymn(element_hymn_number, f"{element_type} {element[1][2]} line {line_number+1} has leading/trailing whitespace.")
+            # pass
+            add_problematic_hymn(element_hymn_number, f"{element_type} {element[1][2]} line {line_number+1} has leading/trailing whitespace.")
 
         if len(line) == 0:
             if line_number != 0 and line_number != len(element[1][1].split("\n")) - 1: # if line is empty and it's not the first or last line
