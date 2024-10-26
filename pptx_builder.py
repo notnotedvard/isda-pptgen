@@ -191,8 +191,11 @@ def insert_chorus_slide(presentation:Presentation, verse_name:str, text:str, las
             shape.text_frame.clear()
             chorus_paragraph = shape.text_frame.paragraphs[0]
             chorus_paragraph.alignment = PP_ALIGN.CENTER
-            insert_text(chorus_paragraph, verse_name, size=0, colored=True)
-            insert_text(chorus_paragraph, f"\n{text}", size=1, colored=False)
+            if verse_name != "":
+                insert_text(chorus_paragraph, verse_name, size=0, colored=True)
+                insert_text(chorus_paragraph, f"\n{text}", size=1, colored=False)
+            else:
+                insert_text(chorus_paragraph, text, size=1, colored=False)
 
     if last_slide:
         # get size of the slide in inches
