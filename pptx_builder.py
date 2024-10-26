@@ -214,8 +214,9 @@ def insert_smart_chorus_slide(presentation:Presentation, verse_name:str, text:st
     # attempt manual split (some verses have an empty line where it makes sence that they would be split)
     manual_split = text.split("\n\n")
     if len(manual_split) > 1:
-        for i in range(len(manual_split)):
-            insert_chorus_slide(presentation, verse_name, manual_split[i], last_slide if i == len(manual_split)-1 else False)
+        insert_chorus_slide(presentation, verse_name, manual_split[0]) # verse_name only on the first slide
+        for i in range(1, len(manual_split)):
+            insert_chorus_slide(presentation, "", manual_split[i], last_slide if i == len(manual_split)-1 else False)
         return
 
 
@@ -229,17 +230,20 @@ def insert_smart_chorus_slide(presentation:Presentation, verse_name:str, text:st
             lines_per_slide_to_be_even = int(lines_per_slide_to_be_even / 2)
             # this will divide the lines into 2 parts until the number of lines is less than or equal to MAX_LINES
 
-        for i in range(0, len(lines), lines_per_slide_to_be_even):
+        # verse_name only on the first slide
+        insert_chorus_slide(presentation, verse_name, "\n".join(lines[:lines_per_slide_to_be_even]))
+
+        for i in range(lines_per_slide_to_be_even, len(lines), lines_per_slide_to_be_even):
             # if it's the last slide set last_slide to whatever is provided
             if i + lines_per_slide_to_be_even >= len(lines):
-                insert_chorus_slide(presentation, verse_name, "\n".join(lines[i:i+lines_per_slide_to_be_even]), last_slide)
+                insert_chorus_slide(presentation, "", "\n".join(lines[i:i+lines_per_slide_to_be_even]), last_slide)
             else:
                 # if the next slide will have less than (lines_per_slide_to_be_even) lines, add the lines from that slide to this one
                 if len(lines[i+lines_per_slide_to_be_even:i+lines_per_slide_to_be_even+lines_per_slide_to_be_even]) < lines_per_slide_to_be_even:
-                    insert_chorus_slide(presentation, verse_name, "\n".join(lines[i:]), last_slide)
+                    insert_chorus_slide(presentation, "", "\n".join(lines[i:]), last_slide)
                     break
                 else:
-                    insert_chorus_slide(presentation, verse_name, "\n".join(lines[i:i+lines_per_slide_to_be_even]))
+                    insert_chorus_slide(presentation, "", "\n".join(lines[i:i+lines_per_slide_to_be_even]))
 
 def insert_scripture_slide(presentation:Presentation, reference:str, text:tuple, verse_separator:str=" "):
     """Inserts a slide with the verses.
