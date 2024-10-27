@@ -1,19 +1,17 @@
 """This script generates a PowerPoint presentation with the lyrics of a hymn based on a template pptx file."""
 
-import sqlite3
-from pptx_builder import *
-from pptx import Presentation
+import os
 import time
 import shutil
-import os
+import sqlite3
+from pptx import Presentation
+from pptx_builder import *
 
-db = sqlite3.connect('hymns.sqlite')
-cached_db = sqlite3.connect('cache/hymns.sqlite')
-cursor = db.cursor()
-cached_cursor = cached_db.cursor()
-number_of_hymns = cursor.execute("SELECT COUNT(*) FROM hymns").fetchone()[0]
-start_time = time.time()
-print(f"Number of hymns: {number_of_hymns}")
+DB = sqlite3.connect('hymns.sqlite')
+CACHED_DB = sqlite3.connect('cache/hymns.sqlite')
+cursor = DB.cursor()
+cached_cursor = CACHED_DB.cursor()
+NUMBER_OF_HYMNS = cursor.execute("SELECT COUNT(*) FROM hymns").fetchone()[0]
 
 def generate_hymn(number:int):
     """genrates slides for hymn number"""
@@ -67,8 +65,9 @@ def generate_hymn(number:int):
     template.save(f"hymns/{number:03} - {hymn_name}.pptx")
 
 FORCE_GENERATE_ALL = input("force generate all ? (y/N): ") == "y"
+start_time = time.time()
 
-for hymn_number in range(1, number_of_hymns + 1):
+for hymn_number in range(1, NUMBER_OF_HYMNS + 1):
     try:
         if FORCE_GENERATE_ALL:
             generate_hymn(hymn_number)
