@@ -5,6 +5,7 @@ output.pptx
 hymns/*
 ~$*
 __pycache__/*
+.DS_Store
 gyp.mp4
 gyp-thumbnail.png
 /cache
