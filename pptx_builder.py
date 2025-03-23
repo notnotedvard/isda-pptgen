@@ -30,7 +30,7 @@ def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bo
     """Creates a 'run' (text with formatting) with the following settings:
     - font size: 32pt (0), 44pt (1), 60pt (2)
     - font color: white or rgb(242, 207, 248) (colored)
-    - font name: Loos Normal Medium
+    - font name: Nunito ExtraBold
     - alignment: center
     - superscript: False by default
     Does not return anything, modifies the paragraph object directly.
@@ -60,7 +60,7 @@ def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bo
     custom_run.text = text
     custom_run.font.size = font_size
     custom_run.font.color.rgb = RGBColor(242, 207, 248) if colored else RGBColor(255, 255, 255)
-    custom_run.font.name = "Loos Normal Medium"
+    custom_run.font.name = "Nunito ExtraBold"
     custom_run.alignment = PP_ALIGN.CENTER
 
     if superscript:
