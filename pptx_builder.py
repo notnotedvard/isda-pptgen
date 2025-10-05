@@ -211,7 +211,7 @@ def insert_chorus_slide(presentation:Presentation, verse_name:str, text:str, las
 
 def insert_smart_chorus_slide(presentation:Presentation, verse_name:str, text:str, last_slide:bool=False):
     """Same as insert_chorus_slide but will split the text into multiple slides if it's too long."""
-    MAX_LINES = 7
+    MAX_LINES = 8
     lines = text.split("\n")
 
     # attempt manual split (some verses have an empty line where it makes sence that they would be split)

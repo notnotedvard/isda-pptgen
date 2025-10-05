@@ -78,6 +78,11 @@ for hymn_number in range(1, NUMBER_OF_HYMNS + 1):
 
             if hymn_db != hymn_cache:
                 generate_hymn(hymn_number)
+
+            # generate the hymn if the pptx file does not exist
+            # look for pptx files that start with hymn_number - ... .pptx
+            # if not any(fname.startswith(f"{hymn_number:03} - ") and fname.endswith(".pptx") for fname in os.listdir("hymns")):
+            #     generate_hymn(hymn_number)
     except KeyboardInterrupt:
         print("Process interrupted.")
         break
