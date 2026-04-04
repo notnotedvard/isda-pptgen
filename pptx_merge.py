@@ -1,12 +1,11 @@
 """Utilities to merge .pptx files into an existing presentation."""
 
-
 from pptx import Presentation
 
 from slide_duplication_utility import (
     _object_rels,
     _exp_add_slide,
-    copy_shapes as copy_shapes_from_util,
+    copy_shapes,
     remove_shape,
 )
 
@@ -20,37 +19,32 @@ def merge_pptx(target: Presentation, source_path: str) -> None:
     """
     source = Presentation(source_path)
 
+    # Get a blank layout from target (use index 6 - blank layout)
+    target_blank_layout = target.slide_layouts[6]
+
     for src_slide in source.slides:
-        _merge_slide(target, src_slide)
+        # Add blank slide to target using TARGET's layout
+        dest = _exp_add_slide(target, target_blank_layout)
 
+        # Remove all shapes from the default layout
+        for shape in dest.shapes:
+            remove_shape(shape)
 
-def _merge_slide(target: Presentation, source_slide):
-    """
-    Copy a single slide from source to target presentation.
-    Uses the same approach as duplicate_slide for consistency.
-    """
-    # Add a new slide to target using source slide's layout
-    dest = _exp_add_slide(target, source_slide.slide_layout)
+        # Copy all existing shapes from source
+        copy_shapes(src_slide.shapes, dest)
 
-    # Remove all shapes from the default layout
-    for shape in dest.shapes:
-        remove_shape(shape)
+        # Copy existing references (hyperlinks, etc.)
+        known_refs = [
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+        ]
+        for rel in _object_rels(src_slide.part):
+            if rel.reltype in known_refs:
+                if rel.is_external:
+                    dest.part.rels.get_or_add_ext_rel(rel.reltype, rel._target)
+                else:
+                    dest.part.rels.get_or_add(rel.reltype, rel._target)
 
-    # Copy all existing shapes using the existing utility
-    copy_shapes_from_util(source_slide.shapes, dest)
-
-    # Copy existing references of known type (hyperlinks, etc.)
-    known_refs = [
-        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
-    ]
-    for rel in _object_rels(source_slide.part):
-        if rel.reltype in known_refs:
-            if rel.is_external:
-                dest.part.rels.get_or_add_ext_rel(rel.reltype, rel._target)
-            else:
-                dest.part.rels.get_or_add(rel.reltype, rel._target)
-
-    # Copy notes if present
-    if source_slide.has_notes_slide:
-        txt = source_slide.notes_slide.notes_text_frame.text
-        dest.notes_slide.notes_text_frame.text = txt
+        # Copy notes if present
+        if src_slide.has_notes_slide:
+            txt = src_slide.notes_slide.notes_text_frame.text
+            dest.notes_slide.notes_text_frame.text = txt
