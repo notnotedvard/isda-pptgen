@@ -1,9 +1,17 @@
-"""
-Generates a sample presentation using the pptx_builder module.
-"""
+"""Generates a sample presentation using the pptx_builder module."""
 
 from pptx import Presentation
-from ppt_builder import *
+
+from ppt_builder import (
+    delete_template_slides,
+    insert_chorus_slide,
+    insert_end_slide,
+    insert_image_slide,
+    insert_simple_title_slide,
+    insert_start_slide,
+    insert_title_with_logo_slide,
+    insert_video_slide,
+)
 
 presentation = Presentation("template.pptx")
 insert_start_slide(presentation)

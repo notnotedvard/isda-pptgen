@@ -1,20 +1,23 @@
-"""Utility script to find problematic hymns in the database. This may include:
+"""
+Utility script to find problematic hymns in the database. This may include:
 - hymns with verse lines / refrain lines longer that MAX_LINE_LENGHT characters
 
-TODO:
+Todo:
 hymns with missing verses
+
 """
 
-import sqlite3
 import os
+import sqlite3
+import sys
 
 MAX_LINE_LENGHT = 45
 MAX_VERSE_LENGTH = 1000
 problematic_hymns = {} # {hymn_id: [problem1, problem2, ...]}
-DB_PATH = 'hymns.sqlite'
+DB_PATH = "hymns.sqlite"
 if not os.path.exists(DB_PATH):
     print(f"Database file {DB_PATH} not found.")
-    exit()
+    sys.exit()
 
 db = sqlite3.connect(DB_PATH)
 cursor = db.cursor()
@@ -34,9 +37,9 @@ refrain_elements = cursor.fetchall()
 elements = []
 
 for element in verse_elements:
-    elements.append(list(element) + ["Verse"])
+    elements.append([*list(element), "Verse"])
 for element in refrain_elements:
-    elements.append(list(element) + ["Refrain"])
+    elements.append([*list(element), "Refrain"])
 
 for element in enumerate(elements):
     element_hymn_number = element[1][0]
@@ -57,7 +60,7 @@ for element in enumerate(elements):
             else:
                 wording = "start" if line_number == 0 else "end"
                 add_problematic_hymn(element_hymn_number, f"{element_type} {element[1][2]} has an empty line at {wording}.")
-        
+
         if line_number > 7 and not HAS_MORE_THAN_8_LINES_FLAG and not HAS_MANUAL_SPLIT_FLAG: # if the verse has more than 8 lines amd it's the first time it's detected
             HAS_MORE_THAN_8_LINES_FLAG = True
             add_problematic_hymn(element_hymn_number, f"{element_type} {element[1][2]} has more than 8 lines.")

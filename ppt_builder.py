@@ -1,14 +1,16 @@
 """This module contains utility functions that are used for creating the slides."""
 
+from lxml import etree
+from moviepy import VideoFileClip
+from PIL import Image
 from pptx import Presentation
-from pptx.util import Pt, Inches
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
+
 # from pptx.enum.text import MSO_ANCHOR # vertical alignment of text
 from pptx.enum.shapes import MSO_SHAPE
-from moviepy import VideoFileClip
-from lxml import etree
-from PIL import Image
+from pptx.enum.text import PP_ALIGN
+from pptx.util import Inches, Pt
+
 from slide_duplication_utility import duplicate_slide
 
 # defining the template slides in the order they appear in the template
@@ -28,7 +30,8 @@ for i, slide in enumerate(TEMPLATE):
     print(f"{i} : {slide}")
 
 def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bool=False):
-    """Creates a 'run' (text with formatting) with the following settings:
+    """
+    Creates a 'run' (text with formatting) with the following settings:
     - font size: 24pt (-1), 32pt (0), 44pt (1), 60pt (2)
     - font color: white or rgb(242, 207, 248) (colored)
     - font name: Nunito ExtraBold
@@ -37,13 +40,13 @@ def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bo
     Does not return anything, modifies the paragraph object directly.
     """
     def set_subscript(font):
-        font._element.set('baseline', '-25000')
+        font._element.set("baseline", "-25000")
 
     def set_superscript(font):
-        font._element.set('baseline', '30000')
+        font._element.set("baseline", "30000")
 
     def set_strikethrough(font):
-        font._element.set('strike','sngStrike')
+        font._element.set("strike","sngStrike")
 
     text = str(text)
 
@@ -74,16 +77,16 @@ def autoplay_media(media):
     """Sets the media to autoplay in a really ugly way that I don't understand but it works."""
     def xpath(el, query):
         """Helper function to find elements in the XML tree."""
-        nsmap = {'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}
+        nsmap = {"p": "http://schemas.openxmlformats.org/presentationml/2006/main"}
         return etree.ElementBase.xpath(el, query, namespaces=nsmap)
-    
-    el_id = xpath(media.element, './/p:cNvPr')[0].attrib['id']
+
+    el_id = xpath(media.element, ".//p:cNvPr")[0].attrib["id"]
     el_cnt = xpath(
         media.element.getparent().getparent().getparent(),
-        './/p:timing//p:video//p:spTgt[@spid="%s"]' % el_id,
+        f'.//p:timing//p:video//p:spTgt[@spid="{el_id}"]',
     )[0]
-    cond = xpath(el_cnt.getparent().getparent(), './/p:cond')[0]
-    cond.set('delay', '0')
+    cond = xpath(el_cnt.getparent().getparent(), ".//p:cond")[0]
+    cond.set("delay", "0")
 
 def delete_template_slides(presentation:Presentation):
     """Deletes the template slides from the presentation. (the first ~7 slides)"""
@@ -256,16 +259,16 @@ def insert_smart_chorus_slide(presentation:Presentation, verse_name:str, text:st
             # if it's the last slide set last_slide to whatever is provided
             if i + lines_per_slide_to_be_even >= len(lines):
                 insert_chorus_slide(presentation, "", "\n".join(lines[i:i+lines_per_slide_to_be_even]), last_slide)
+            # if the next slide will have less than (lines_per_slide_to_be_even) lines, add the lines from that slide to this one
+            elif len(lines[i+lines_per_slide_to_be_even:i+lines_per_slide_to_be_even+lines_per_slide_to_be_even]) < lines_per_slide_to_be_even:
+                insert_chorus_slide(presentation, "", "\n".join(lines[i:]), last_slide)
+                break
             else:
-                # if the next slide will have less than (lines_per_slide_to_be_even) lines, add the lines from that slide to this one
-                if len(lines[i+lines_per_slide_to_be_even:i+lines_per_slide_to_be_even+lines_per_slide_to_be_even]) < lines_per_slide_to_be_even:
-                    insert_chorus_slide(presentation, "", "\n".join(lines[i:]), last_slide)
-                    break
-                else:
-                    insert_chorus_slide(presentation, "", "\n".join(lines[i:i+lines_per_slide_to_be_even]))
+                insert_chorus_slide(presentation, "", "\n".join(lines[i:i+lines_per_slide_to_be_even]))
 
 def insert_scripture_slide(presentation:Presentation, reference:str, text:tuple, verse_separator:str=" "):
-    """Inserts a slide with the verses.
+    """
+    Inserts a slide with the verses.
     Text need to be provided like this:
     (
         ("1", "This is the first verse."),
@@ -285,7 +288,7 @@ def insert_scripture_slide(presentation:Presentation, reference:str, text:tuple,
                 if verse[0] != "":
                     if verse[0] != text[0][0]:
                         insert_text(verse_paragraph, verse_separator, size=1, colored=False)
-                    insert_text(verse_paragraph, verse[0]+' ', size=1, colored=True, superscript=True)
+                    insert_text(verse_paragraph, verse[0]+" ", size=1, colored=True, superscript=True)
                 insert_text(verse_paragraph, verse[1], size=1, colored=False)
         elif shape.name == "reference":
             shape.text_frame.clear()

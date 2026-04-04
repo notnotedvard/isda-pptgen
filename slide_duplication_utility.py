@@ -5,12 +5,11 @@ def _object_rels(obj):
         rels = obj.rels
 
         # Change required for python-pptx 0.6.22
-        check_rels_content = [k for k in rels]
+        check_rels_content = list(rels)
         if isinstance(check_rels_content.pop(), str):
             return [v for k, v in rels.items()]
-        else:
-            return [k for k in rels]
-    except:
+        return list(rels)
+    except Exception:
         return []
 
 def _exp_add_slide(ppt, slide_layout):
@@ -74,8 +73,9 @@ def copy_shapes(source, dest):
     :param dest:
     :return:
     """
-    from pptx.shapes.group import GroupShape
     import copy
+
+    from pptx.shapes.group import GroupShape
 
     # Copy all existing shapes
     for shape in source:
@@ -105,7 +105,7 @@ def copy_shapes(source, dest):
             # Get image contents
             content = io.BytesIO(shape.image.blob)
             result = dest.shapes.add_picture(
-                content, shape.left, shape.top, shape.width, shape.height
+                content, shape.left, shape.top, shape.width, shape.height,
             )
             result.name = shape.name
             result.crop_left = shape.crop_left
@@ -178,7 +178,6 @@ def remove_shape(shape):
 
 ### CHARTS
 
-from typing import Union
 
 import pandas as pd
 
@@ -192,9 +191,9 @@ def chart_to_dataframe(graphical_frame) -> pd.DataFrame:
     :param graphical_frame:
     :return:
     """
-    from openpyxl import load_workbook
-
     from io import BytesIO
+
+    from openpyxl import load_workbook
 
     wb = load_workbook(
         BytesIO(graphical_frame.chart.part.chart_workbook.xlsx_part.blob),
@@ -204,6 +203,7 @@ def chart_to_dataframe(graphical_frame) -> pd.DataFrame:
     ws = wb.active
 
     from itertools import islice
+
     import pandas as pd
 
     data = ws.values
@@ -225,8 +225,8 @@ def dataframe_to_chart_data(df):
     :param df:
     :return:
     """
-    from pptx.chart.data import CategoryChartData
     import numpy as np
+    from pptx.chart.data import CategoryChartData
 
     copy_data = CategoryChartData()
     copy_data.categories = df.index.astype(str).to_list()
@@ -244,7 +244,7 @@ def dataframe_to_chart_data(df):
     if edge_cases > 0:
         import warnings
 
-        warnings.warn("Series data containing NaN/INF values: filled to empty")
+        warnings.warn("Series data containing NaN/INF values: filled to empty", stacklevel=2)
 
     return copy_data
 
@@ -321,6 +321,7 @@ def clone_chart(graphical_frame, dest):
 
     # Clone styling from old chart to new one
     from random import randrange
+
     from lxml import etree
     from pptx.oxml import parse_xml
 
@@ -342,13 +343,14 @@ def clone_chart(graphical_frame, dest):
 
     cloned_styling = copy.deepcopy(old_chart_part._element)
     cloned_styling.xpath(".//c:externalData")[0].set(
-        id_attribute, chart_data_reference_id
+        id_attribute, chart_data_reference_id,
     )
     cloned_styling.xpath(".//c:autoUpdate")[0].set("val", "1")
     new_chart_part.part._element = cloned_styling
 
     # Parse other relationships of the chart
-    from pptx.opc.constants import CONTENT_TYPE as CT, RELATIONSHIP_TYPE as RT
+    from pptx.opc.constants import CONTENT_TYPE as CT
+    from pptx.opc.constants import RELATIONSHIP_TYPE as RT
     from pptx.opc.package import XmlPart
 
     class ColorsPart(XmlPart):
@@ -381,7 +383,7 @@ def clone_chart(graphical_frame, dest):
     old_chart_refs = old_chart_part.rels
 
     # Fix styling and colors applied to the new chart
-    for k, v in dict(old_chart_refs._rels).items():
+    for v in dict(old_chart_refs._rels).values():
         if (
             v.reltype
             == "http://schemas.microsoft.com/office/2011/relationships/chartStyle"
@@ -416,6 +418,7 @@ def add_column(table):
     :param table: shape.table element
     """
     import copy
+
     from pptx.table import _Cell, _Column
 
     new_col = copy.deepcopy(table._tbl.tblGrid.gridCol_lst[-1])
@@ -449,7 +452,7 @@ def add_column(table):
                         j.remove(elem)
 
     # Create object in memory, in case some operations are done by the library
-    col = _Column(new_col, table)
+    _Column(new_col, table)
 
 
 def remove_column(table, column_index: int):
@@ -474,8 +477,9 @@ def add_row(table) -> None:
     :param table: shape.table element
     """
     import copy
-    from pptx.table import _Cell, _Row
     from random import randrange
+
+    from pptx.table import _Cell, _Row
 
     new_row = copy.deepcopy(table._tbl.tr_lst[-1])  # copies last row element
 
@@ -504,15 +508,17 @@ def remove_row(table, row_index: int) -> None:
 
 
 ### SLIDE MASTER & LAYOUT
-from pptx.opc.constants import CONTENT_TYPE as CT, RELATIONSHIP_TYPE as RT
+import copy
+from random import randrange
+
+from lxml import etree
+from pptx.opc.constants import CONTENT_TYPE as CT
+from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.opc.package import XmlPart
 from pptx.opc.packuri import PackURI
-from pptx.parts.slide import SlideLayoutPart as SLP, SlideMasterPart as SMP
-
-from random import randrange
-from lxml import etree
 from pptx.oxml import parse_xml
-import copy
+from pptx.parts.slide import SlideLayoutPart as SLP
+from pptx.parts.slide import SlideMasterPart as SMP
 
 
 class SlideLayoutPart(SLP):
@@ -625,11 +631,11 @@ def _new_existing_slide_ml_id(ppt):
     existing_slide_layout_ids = []
     for sm in ppt.slide_masters:
         existing_slide_layout_ids = existing_slide_layout_ids + sm.element.xpath(
-            ".//p:sldLayoutId/@id"
+            ".//p:sldLayoutId/@id",
         )
 
     existing_slide_layout_ids = existing_slide_layout_ids + ppt.element.xpath(
-        ".//p:sldMasterId/@id"
+        ".//p:sldMasterId/@id",
     )
     sel_id = max([255] + [int(id_str) for id_str in existing_slide_layout_ids]) + 1
 
@@ -649,7 +655,7 @@ def clone_slide_master(pres, slide_master):
     el_ref = pres.slide_masters._sldMasterIdLst._add_sldMasterId()
     el_ref.set("id", str(sel_id))
     el_ref.set(
-        "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id", rId
+        "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id", rId,
     )
 
     # Remove references of Slide Layouts from the new Slide Master
@@ -696,7 +702,7 @@ def clone_slide_layout(ppt, source_layout, dest_slide_master):
     # Generate the new Slide Layout part object
     new_el = copy.deepcopy(source_layout.element)
     new_ref = SlideLayoutPart.new(
-        ppt.slide_masters, slide_master.part, etree.tostring(new_el)
+        ppt.slide_masters, slide_master.part, etree.tostring(new_el),
     )
 
     # Connect the Slide Master to the new Slide Layout
@@ -707,7 +713,7 @@ def clone_slide_layout(ppt, source_layout, dest_slide_master):
     el_ref = slide_master.slide_layouts._sldLayoutIdLst._add_sldLayoutId()
     el_ref.set("id", str(sel_id))
     el_ref.set(
-        "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id", rId
+        "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id", rId,
     )
 
     # Connect the Slide Layout to the Slide Master
@@ -719,12 +725,11 @@ def clone_slide_layout(ppt, source_layout, dest_slide_master):
     # Ensure all shapes of the Slide Layout are set up correctly
     _clone_sml_shapes(source_layout, dest)
 
-    return None
 
 
-from pptx.slide import SlideMaster, SlideLayout
-from pptx.shapes.shapetree import _BaseGroupShapes
 from pptx.package import Package
+from pptx.shapes.shapetree import _BaseGroupShapes
+from pptx.slide import SlideLayout, SlideMaster
 
 
 class _BaseGroupShapesProxy(_BaseGroupShapes):
@@ -779,7 +784,7 @@ def _fix_package_ref(dest):
 
 
 def estimate_text_box_size(
-    txt, font, max_width: Union[int, None] = None, line_spacing: int = 4  # ImageFont
+    txt, font, max_width: int | None = None, line_spacing: int = 4,  # ImageFont
 ):
     """
     Example of use:
@@ -801,18 +806,14 @@ def estimate_text_box_size(
     :param line_spacing:
     :return:
     """
-
-    from PIL import ImageDraw, Image
+    from PIL import Image, ImageDraw
 
     image = Image.new(size=(400, 300), mode="RGB")
     draw = ImageDraw.Draw(image)
-    emu_per_inch = 914400
-    px_per_inch = 72.0
-    pt_per_pixel = 0.75
 
-    fontsize_pt = 12
     # font = ImageFont.truetype("arial.ttf", int(fontsize_pt / pt_per_pixel))
-    import textwrap, math
+    import math
+    import textwrap
 
     if max_width is not None:
         actual_txt = []
@@ -821,14 +822,13 @@ def estimate_text_box_size(
             split_at = len(line) // math.ceil(width / max_width)
             actual_txt = actual_txt + textwrap.wrap(line, width=split_at)
 
-        new_lines = len(actual_txt)
+        len(actual_txt)
         actual_txt = "\n".join(actual_txt)
     else:
         actual_txt = txt
-        new_lines = 0
 
     left, top, right, bottom = draw.multiline_textbbox(
-        (0, 0), actual_txt, font=font, spacing=line_spacing
+        (0, 0), actual_txt, font=font, spacing=line_spacing,
     )
     ascent, descent = font.getmetrics()
 
