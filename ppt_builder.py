@@ -12,6 +12,7 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 
 from slide_duplication_utility import duplicate_slide
+from pptx_merge import merge_pptx
 
 # defining the template slides in the order they appear in the template
 TEMPLATE = (
