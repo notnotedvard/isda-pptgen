@@ -25,9 +25,10 @@ TEMPLATE = (
     "end_slide",
 )
 
-print("Using structure of template :")
-for i, slide in enumerate(TEMPLATE):
-    print(f"{i} : {slide}")
+# debug
+# print("Using structure of template :")
+# for i, slide in enumerate(TEMPLATE):
+#     print(f"{i} : {slide}")
 
 def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bool=False):
     """
