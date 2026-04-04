@@ -6,16 +6,17 @@ from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 # from pptx.enum.text import MSO_ANCHOR # vertical alignment of text
 from pptx.enum.shapes import MSO_SHAPE
-from moviepy.editor import VideoFileClip
+from moviepy import VideoFileClip
 from lxml import etree
 from PIL import Image
 from slide_duplication_utility import duplicate_slide
 
 # defining the template slides in the order they appear in the template
 TEMPLATE = (
-    "logo_slide",
+    "start_slide",
     "media_with_caption_slide",
     "simple_title_slide",
+    "title_with_logo_slide",
     "song_title_slide",
     "chorus_slide",
     "scripture_slide",
@@ -28,7 +29,7 @@ for i, slide in enumerate(TEMPLATE):
 
 def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bool=False):
     """Creates a 'run' (text with formatting) with the following settings:
-    - font size: 32pt (0), 44pt (1), 60pt (2)
+    - font size: 24pt (-1), 32pt (0), 44pt (1), 60pt (2)
     - font color: white or rgb(242, 207, 248) (colored)
     - font name: Nunito ExtraBold
     - alignment: center
@@ -47,6 +48,8 @@ def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bo
     text = str(text)
 
     match size:
+        case -1:
+            font_size = Pt(24)
         case 0:
             font_size = Pt(32)
         case 1:
@@ -87,9 +90,9 @@ def delete_template_slides(presentation:Presentation):
     for _ in range(len(TEMPLATE)):
         presentation.slides._sldIdLst.remove(presentation.slides._sldIdLst[0])
 
-def insert_logo_slide(presentation:Presentation):
-    """Inserts the logo slide."""
-    duplicate_slide(presentation, TEMPLATE.index("logo_slide"))
+def insert_start_slide(presentation:Presentation):
+    """Inserts the start slide."""
+    duplicate_slide(presentation, TEMPLATE.index("start_slide"))
 
 def insert_video_slide(presentation:Presentation, video_path:str, thumbnail_path:str, caption:str=""):
     """Inserts a slide with a video and a caption."""
@@ -110,7 +113,7 @@ def insert_video_slide(presentation:Presentation, video_path:str, thumbnail_path
                 shape.text_frame.clear()
                 caption_paragraph = shape.text_frame.paragraphs[0]
                 caption_paragraph.alignment = PP_ALIGN.CENTER
-                insert_text(caption_paragraph, caption, size=0, colored=False)
+                insert_text(caption_paragraph, caption, size=-1, colored=False)
     else:
         # removing the caption shape if there's no caption
         for shape in slide.shapes:
@@ -158,6 +161,19 @@ def insert_image_slide(presentation:Presentation, image_path:str, caption:str=""
 def insert_simple_title_slide(presentation:Presentation, title:str):
     """Inserts a slide with a simple title."""
     slide = duplicate_slide(presentation, TEMPLATE.index("simple_title_slide"))
+
+    # changing the contents of the slide
+    for shape in slide.shapes:
+        if shape.name == "title":
+            shape.text_frame.clear()
+            title_paragraph = shape.text_frame.paragraphs[0]
+            title_paragraph.alignment = PP_ALIGN.CENTER
+            insert_text(title_paragraph, title, size=2, colored=False)
+
+
+def insert_title_with_logo_slide(presentation:Presentation, title:str):
+    """Inserts a slide with a title and a logo."""
+    slide = duplicate_slide(presentation, TEMPLATE.index("title_with_logo_slide"))
 
     # changing the contents of the slide
     for shape in slide.shapes:
