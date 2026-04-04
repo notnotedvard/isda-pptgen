@@ -10,3 +10,6 @@ gyp.mp4
 gyp-thumbnail.png
 /cache
 /cache/*
+
+example-files/*
+*.yml
