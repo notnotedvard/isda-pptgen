@@ -1,5 +1,6 @@
 """This module contains utility functions that are used for creating the slides."""
 
+import datetime
 from lxml import etree
 from moviepy import VideoFileClip
 from PIL import Image
@@ -95,9 +96,27 @@ def delete_template_slides(presentation:Presentation):
     for _ in range(len(TEMPLATE)):
         presentation.slides._sldIdLst.remove(presentation.slides._sldIdLst[0])
 
-def insert_start_slide(presentation:Presentation):
+def insert_start_slide(presentation:Presentation, date: datetime.date = None):
     """Inserts the start slide."""
-    duplicate_slide(presentation, TEMPLATE.index("start_slide"))
+    slide = duplicate_slide(presentation, TEMPLATE.index("start_slide"))
+    
+    if date:
+        day = date.day
+        if 11 <= (day % 100) <= 13:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+        
+        month_year = date.strftime(" %B %Y")
+        
+        for shape in slide.shapes:
+            if shape.name == "date":
+                shape.text_frame.clear()
+                date_paragraph = shape.text_frame.paragraphs[0]
+                date_paragraph.alignment = PP_ALIGN.RIGHT
+                insert_text(date_paragraph, str(day), size=0, colored=False)
+                insert_text(date_paragraph, suffix, size=0, colored=False, superscript=True)
+                insert_text(date_paragraph, month_year, size=0, colored=False)
 
 def insert_video_slide(presentation:Presentation, video_path:str, thumbnail_path:str, caption:str=""):
     """Inserts a slide with a video and a caption."""
@@ -185,7 +204,7 @@ def insert_title_with_logo_slide(presentation:Presentation, title:str):
         if shape.name == "title":
             shape.text_frame.clear()
             title_paragraph = shape.text_frame.paragraphs[0]
-            title_paragraph.alignment = PP_ALIGN.CENTER
+            title_paragraph.alignment = PP_ALIGN.LEFT
             insert_text(title_paragraph, title, size=2, colored=False)
 
 def insert_song_title_slide(presentation:Presentation, number:int, title:str):

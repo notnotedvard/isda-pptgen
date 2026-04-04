@@ -1,5 +1,6 @@
 """Generates a sample presentation using the pptx_builder module."""
 
+import datetime
 from pptx import Presentation
 
 from ppt_builder import (
@@ -14,8 +15,9 @@ from ppt_builder import (
     merge_pptx,
 )
 
+date = datetime.datetime.now()
 presentation = Presentation("template.pptx")
-insert_start_slide(presentation)
+insert_start_slide(presentation, date)
 insert_simple_title_slide(presentation, "This is a simple title slide\nWhat if it has 2 lines?")
 insert_title_with_logo_slide(presentation, "This is a title with a logo")
 insert_simple_title_slide(presentation, "Here I will merge another presentation")
