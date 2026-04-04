@@ -7,7 +7,7 @@ import time
 
 from pptx import Presentation
 
-from pptx_builder import *
+from ppt_builder import *
 
 DB = sqlite3.connect("hymns.sqlite")
 CACHED_DB = sqlite3.connect("cache/hymns.sqlite")

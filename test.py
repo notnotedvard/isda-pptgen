@@ -3,7 +3,7 @@ Generates a sample presentation using the pptx_builder module.
 """
 
 from pptx import Presentation
-from pptx_builder import *
+from ppt_builder import *
 
 presentation = Presentation("template.pptx")
 insert_simple_title_slide(presentation, "This is a simple title slide\nWhat if it has 2 lines?")
