@@ -3,7 +3,7 @@
 import datetime
 from pptx import Presentation
 
-from ppt_builder import (
+from isda_pptgen.ppt_builder import (
     delete_template_slides,
     insert_chorus_slide,
     insert_end_slide,
@@ -46,7 +46,7 @@ preacher = "John Doe"
 meditation_video = ""
 closing_song_hymn = 633
 
-presentation = Presentation("template.pptx")
+presentation = Presentation("assets/template.pptx")
 insert_start_slide(presentation, date)
 insert_title_with_logo_slide(presentation, "Sabbath School Offering & Mission Spotlight")
 insert_video_slide(presentation, get_mission_spotlight_video(), "example-files/gyp-thumbnail.png", "Mission Spotlight")

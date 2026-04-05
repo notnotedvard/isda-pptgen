@@ -14,7 +14,7 @@ import sys
 MAX_LINE_LENGHT = 45
 MAX_VERSE_LENGTH = 1000
 problematic_hymns = {} # {hymn_id: [problem1, problem2, ...]}
-DB_PATH = "hymns.sqlite"
+DB_PATH = "assets/hymns.sqlite"
 if not os.path.exists(DB_PATH):
     print(f"Database file {DB_PATH} not found.")
     sys.exit()

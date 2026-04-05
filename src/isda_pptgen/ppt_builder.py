@@ -12,8 +12,8 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 
-from slide_duplication_utility import duplicate_slide
-from pptx_merge import merge_pptx
+from isda_pptgen.slide_duplication_utility import duplicate_slide
+from isda_pptgen.pptx_merge import merge_pptx
 
 # defining the template slides in the order they appear in the template
 TEMPLATE = (
@@ -324,7 +324,7 @@ def insert_end_slide(presentation:Presentation):
 def insert_hymn(presentation:Presentation, number:int):
     """Inserts slides for a hymn from the database."""
     import sqlite3
-    db = sqlite3.connect("hymns.sqlite")
+    db = sqlite3.connect("assets/hymns.sqlite")
     cursor = db.cursor()
 
     hymn_name = cursor.execute("SELECT name FROM hymns WHERE id = ?", (number,)).fetchone()[0]

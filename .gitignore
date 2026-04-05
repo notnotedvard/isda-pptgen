@@ -12,4 +12,47 @@ gyp-thumbnail.png
 /cache/*
 
 example-files/*
-*.yml
+*.yml# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Caches
+.ruff_cache/
+cache/
+
+# Local workspace specific
+example-files/
+hymns/
+output.pptx
+*.sqlite
+!assets/hymns.sqlite

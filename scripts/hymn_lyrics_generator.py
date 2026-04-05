@@ -7,12 +7,12 @@ import time
 
 from pptx import Presentation
 
-from ppt_builder import (
+from isda_pptgen.ppt_builder import (
     delete_template_slides,
     insert_hymn,
 )
 
-DB = sqlite3.connect("hymns.sqlite")
+DB = sqlite3.connect("assets/hymns.sqlite")
 CACHED_DB = sqlite3.connect("cache/hymns.sqlite")
 cursor = DB.cursor()
 cached_cursor = CACHED_DB.cursor()
@@ -23,7 +23,7 @@ def generate_hymn(number:int):
     hymn_name = cursor.execute("SELECT name FROM hymns WHERE id = ?", (number,)).fetchone()[0]
 
     # creating a presentation
-    template = Presentation("template.pptx")
+    template = Presentation("assets/template.pptx")
     
     insert_hymn(template, number)
 
@@ -57,6 +57,6 @@ print("Caching db...")
 # make a copy in cache/hymns.sqlite
 if not os.path.exists("cache"):
     os.makedirs("cache")
-shutil.copy("hymns.sqlite", "cache/hymns.sqlite")
+shutil.copy("assets/hymns.sqlite", "cache/hymns.sqlite")
 
 print(f"Done in {time.time() - start_time:.2f} seconds.")
