@@ -2,7 +2,7 @@
 
 from pptx import Presentation
 
-from isda_pptgen.slide_duplication_utility import (
+from isda_pptgen.duplicate import (
     _object_rels,
     _exp_add_slide,
     copy_shapes,

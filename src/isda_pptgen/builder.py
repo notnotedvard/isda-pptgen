@@ -12,8 +12,8 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 
-from isda_pptgen.slide_duplication_utility import duplicate_slide
-from isda_pptgen.pptx_merge import merge_pptx
+from isda_pptgen.duplicate import duplicate_slide
+from isda_pptgen.merge import merge_pptx
 
 # defining the template slides in the order they appear in the template
 TEMPLATE = (

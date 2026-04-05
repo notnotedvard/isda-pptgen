@@ -3,7 +3,7 @@
 import datetime
 from pptx import Presentation
 
-from isda_pptgen.ppt_builder import (
+from isda_pptgen.builder import (
     delete_template_slides,
     insert_chorus_slide,
     insert_end_slide,
@@ -20,7 +20,7 @@ def get_mission_spotlight_video():
     """Downloads the mission spotlight and returns the path to the video file and the thumbnail image."""
     return "example-files/gyp.mp4"
 
-# the following "insert" functions should be moved to ppt_builder.py and should be implemented there, but for now they are just placeholders here
+# the following "insert" functions should be moved to builder.py and should be implemented there, but for now they are just placeholders here
 
 def insert_hymn(presentation, hymn_number):
     """Inserts the slides for a hymn given its number."""

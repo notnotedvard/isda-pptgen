@@ -7,7 +7,7 @@ import time
 
 from pptx import Presentation
 
-from isda_pptgen.ppt_builder import (
+from isda_pptgen.builder import (
     delete_template_slides,
     insert_hymn,
 )

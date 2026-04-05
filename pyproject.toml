@@ -17,7 +17,7 @@ isda-pptgen = "isda_pptgen.main:main"
 [tool.ruff.lint]
 ignore = ["SLF001"]
 [tool.ruff.lint.per-file-ignores]
-"slide_duplication_utility.py" = ["E402"]
+"duplicate.py" = ["E402"]
 
 [build-system]
 requires = ["setuptools"]
