@@ -35,12 +35,23 @@ TEMPLATE = (
 # for i, slide in enumerate(TEMPLATE):
 #     print(f"{i} : {slide}")
 
-def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bool=False):
+COLORS = {
+    "white": RGBColor(255, 255, 255),
+    "pink": RGBColor(242, 207, 248),
+    "green": RGBColor(217, 242, 208)
+}
+
+FONTS = {
+    "extrabold": "Nunito ExtraBold",
+    "semibold": "Nunito SemiBold"
+}
+
+def insert_text(pragraph, text:str, size:int, color:str="white", font:str="extrabold", superscript:bool=False):
     """
     Creates a 'run' (text with formatting) with the following settings:
     - font size: 24pt (-1), 32pt (0), 44pt (1), 60pt (2)
     - font color: white or rgb(242, 207, 248) (colored)
-    - font name: Nunito ExtraBold
+    - font name: Nunito ExtraBold ("extrabold") or Nunito SemiBold ("semibold")
     - alignment: center
     - superscript: False by default
     Does not return anything, modifies the paragraph object directly.
@@ -71,8 +82,8 @@ def insert_text(pragraph, text:str, size:int, colored:bool=False, superscript:bo
     custom_run = pragraph.add_run()
     custom_run.text = text
     custom_run.font.size = font_size
-    custom_run.font.color.rgb = RGBColor(242, 207, 248) if colored else RGBColor(255, 255, 255)
-    custom_run.font.name = "Nunito ExtraBold"
+    custom_run.font.color.rgb = COLORS.get(color, COLORS["white"])
+    custom_run.font.name = FONTS.get(font, FONTS["extrabold"])
     custom_run.alignment = PP_ALIGN.CENTER
 
     if superscript:
@@ -117,9 +128,9 @@ def insert_start_slide(presentation:Presentation, date: datetime.date = None):
                 shape.text_frame.clear()
                 date_paragraph = shape.text_frame.paragraphs[0]
                 date_paragraph.alignment = PP_ALIGN.RIGHT
-                insert_text(date_paragraph, str(day), size=0, colored=False)
-                insert_text(date_paragraph, suffix, size=0, colored=False, superscript=True)
-                insert_text(date_paragraph, month_year, size=0, colored=False)
+                insert_text(date_paragraph, str(day), size=0, color="white")
+                insert_text(date_paragraph, suffix, size=0, color="white", superscript=True)
+                insert_text(date_paragraph, month_year, size=0, color="white")
 
 def insert_video_slide(presentation:Presentation, video_path:str, thumbnail_path:str, caption:str=""):
     """Inserts a slide with a video and a caption."""
@@ -140,7 +151,7 @@ def insert_video_slide(presentation:Presentation, video_path:str, thumbnail_path
                 shape.text_frame.clear()
                 caption_paragraph = shape.text_frame.paragraphs[0]
                 caption_paragraph.alignment = PP_ALIGN.CENTER
-                insert_text(caption_paragraph, caption, size=-1, colored=False)
+                insert_text(caption_paragraph, caption, size=-1, color="white")
     else:
         # removing the caption shape if there's no caption
         for shape in slide.shapes:
@@ -173,7 +184,7 @@ def insert_image_slide(presentation:Presentation, image_path:str, caption:str=""
                 shape.text_frame.clear()
                 caption_paragraph = shape.text_frame.paragraphs[0]
                 caption_paragraph.alignment = PP_ALIGN.CENTER
-                insert_text(caption_paragraph, caption, size=0, colored=False)
+                insert_text(caption_paragraph, caption, size=0, color="white")
     else:
         # removing the caption shape if there's no caption
         for shape in slide.shapes:
@@ -200,7 +211,7 @@ def insert_simple_title_slide(presentation:Presentation, title:str):
             shape.text_frame.clear()
             title_paragraph = shape.text_frame.paragraphs[0]
             title_paragraph.alignment = PP_ALIGN.CENTER
-            insert_text(title_paragraph, title, size=2, colored=False)
+            insert_text(title_paragraph, title, size=2, color="white")
 
 def insert_title_with_logo_slide(presentation:Presentation, title:str):
     """Inserts a slide with a title and a logo."""
@@ -212,7 +223,7 @@ def insert_title_with_logo_slide(presentation:Presentation, title:str):
             shape.text_frame.clear()
             title_paragraph = shape.text_frame.paragraphs[0]
             title_paragraph.alignment = PP_ALIGN.LEFT
-            insert_text(title_paragraph, title, size=2, colored=False)
+            insert_text(title_paragraph, title, size=2, color="white")
 
 def insert_song_title_slide(presentation:Presentation, number:int, title:str):
     """Inserts a slide with the title of the song."""
@@ -225,8 +236,8 @@ def insert_song_title_slide(presentation:Presentation, number:int, title:str):
             shape.text_frame.clear()
             title_paragraph = shape.text_frame.paragraphs[0]
             title_paragraph.alignment = PP_ALIGN.CENTER
-            insert_text(title_paragraph, f"#{number}", size=0, colored=False)
-            insert_text(title_paragraph, f"\n{title}", size=2, colored=False)
+            insert_text(title_paragraph, f"#{number}", size=0, color="white")
+            insert_text(title_paragraph, f"\n{title}", size=2, color="white")
 
 def insert_chorus_slide(presentation:Presentation, verse_name:str, text:str, last_slide:bool=False):
     """Inserts a slide with the chorus of the song."""
@@ -239,10 +250,10 @@ def insert_chorus_slide(presentation:Presentation, verse_name:str, text:str, las
             chorus_paragraph = shape.text_frame.paragraphs[0]
             chorus_paragraph.alignment = PP_ALIGN.CENTER
             if verse_name != "":
-                insert_text(chorus_paragraph, verse_name, size=0, colored=True)
-                insert_text(chorus_paragraph, f"\n{text}", size=1, colored=False)
+                insert_text(chorus_paragraph, verse_name, size=0, color="pink")
+                insert_text(chorus_paragraph, f"\n{text}", size=1, color="white")
             else:
-                insert_text(chorus_paragraph, text, size=1, colored=False)
+                insert_text(chorus_paragraph, text, size=1, color="white")
 
     if last_slide:
         # get size of the slide in inches
@@ -315,28 +326,48 @@ def insert_scripture_slide(presentation:Presentation, reference:str, text:tuple,
             for verse in text:
                 if verse[0] != "":
                     if verse[0] != text[0][0]:
-                        insert_text(verse_paragraph, verse_separator, size=1, colored=False)
-                    insert_text(verse_paragraph, verse[0]+" ", size=1, colored=True, superscript=True)
-                insert_text(verse_paragraph, verse[1], size=1, colored=False)
+                        insert_text(verse_paragraph, verse_separator, size=1, color="white")
+                    insert_text(verse_paragraph, verse[0]+" ", size=1, color="pink", superscript=True)
+                insert_text(verse_paragraph, verse[1], size=1, color="white")
         elif shape.name == "reference":
             shape.text_frame.clear()
             reference_paragraph = shape.text_frame.paragraphs[0]
             reference_paragraph.alignment = PP_ALIGN.CENTER
-            insert_text(reference_paragraph, reference, size=0, colored=True)
+            insert_text(reference_paragraph, reference, size=0, color="pink")
 
 def insert_thithes_and_offerings_slides(presentation:Presentation, unallocated_offerings:str):
     """Inserts the slides for the thithes and offerings given the unallocated offerings."""
-    slide = duplicate_slide(presentation, TEMPLATE.index("thithes_and_offerings_slide_0"))
+    offering_slide_0 = duplicate_slide(presentation, TEMPLATE.index("thithes_and_offerings_slide_0"))
 
     # changing the contents of the slide
-    for shape in slide.shapes:
+    for shape in offering_slide_0.shapes:
         if shape.name == "unallocated_offerings":
             shape.text_frame.clear()
             reference_paragraph = shape.text_frame.paragraphs[0]
             reference_paragraph.alignment = PP_ALIGN.CENTER
-            insert_text(reference_paragraph, f"Today’s unallocated offerings will go towards {unallocated_offerings}", size=0, colored=True)
-    duplicate_slide(presentation, TEMPLATE.index("thithes_and_offerings_slide_1"))
-    duplicate_slide(presentation, TEMPLATE.index("thithes_and_offerings_slide_2"))
+            insert_text(reference_paragraph, "Today’s unallocated offerings will go towards ", size=0, color="white", font="semibold")
+            insert_text(reference_paragraph, unallocated_offerings, size=0, color="green", font="semibold")
+    
+    offering_slide_1 = duplicate_slide(presentation, TEMPLATE.index("thithes_and_offerings_slide_1"))
+
+    for shape in offering_slide_1.shapes:
+        if shape.name == "unallocated_offerings":
+            shape.text_frame.clear()
+            reference_paragraph = shape.text_frame.paragraphs[0]
+            reference_paragraph.alignment = PP_ALIGN.CENTER
+            insert_text(reference_paragraph, "Today’s unallocated offerings will go towards ", size=-1, color="white", font="semibold")
+            insert_text(reference_paragraph, unallocated_offerings, size=-1, color="green", font="semibold")
+    
+    offering_slide_2 = duplicate_slide(presentation, TEMPLATE.index("thithes_and_offerings_slide_2"))
+
+    for shape in offering_slide_2.shapes:
+        if shape.name == "unallocated_offerings":
+            shape.text_frame.clear()
+            reference_paragraph = shape.text_frame.paragraphs[0]
+            reference_paragraph.alignment = PP_ALIGN.CENTER
+            insert_text(reference_paragraph, "Today’s unallocated offerings will go towards ", size=-1, color="white", font="semibold")
+            insert_text(reference_paragraph, unallocated_offerings, size=-1, color="green", font="semibold")
+
     insert_chorus_slide(presentation, "Doxology", "Praise God, from whom all blessings flow\nPraise Him, all creatures here below\nPraise Him above, ye heavenly host\nPraise Father, Son and Holy Ghost\nAmen!")
 
 def insert_end_slide(presentation:Presentation):
