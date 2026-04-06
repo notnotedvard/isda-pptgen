@@ -22,30 +22,42 @@ from isda_pptgen.builder import (
 from isda_pptgen.ytdl import download_youtube_video, merge_subtitles, burn_subtitles
 from isda_pptgen.merge import merge_pptx
 
-
+# Worship service details
 date = datetime.date.fromisoformat("2024-06-15")
+mission_spotlight_url = "https://www.youtube.com/watch?v=OznS1gAwe0c"
 song_service_hymns = [526, 526]
 call_to_worship_scripture = "Psalm 147:1"
 opening_song_hymn = 473
 childrens_story_ppt = ""
 thermometers_slides = ""
-unallocated_offerings = "Combined Budget"
-special_item_video = "example-files/gyp.mp4"
+unallocated_offerings = "Something"
+special_item_video_url = "example-files/gyp.mp4"
 scripture_reading = "John 3:16"
 sermon_title = "God's Free Health Plan"
 sermon_slides = ""
 preacher = "John Doe"
-meditation_video = ""
+meditation_video_url = ""
 closing_song_hymn = 633
 
 presentation = Presentation("assets/template.pptx")
+clear_media_folder()
+
+# Downloading and preparing media
+if mission_spotlight_url != "":
+    download_youtube_video(mission_spotlight_url, output_dir="media", filename="mission-spotlight", download_subtitles=True)
+    burn_subtitles("media/mission-spotlight.mp4", "media/mission-spotlight.en.srt", "media/mission-spotlight-subbed.mp4")
+if special_item_video_url != "":
+    download_youtube_video(special_item_video_url, output_dir="media", filename="special-item", download_subtitles=False)
+if meditation_video_url != "":
+    download_youtube_video(meditation_video_url, output_dir="media", filename="meditation", download_subtitles=False)
+
 
 # start slides
 insert_start_slide(presentation, date)
 insert_title_with_logo_slide(presentation, "Sabbath School Offering & Mission Spotlight")
 
 # mission spotlight
-insert_video_slide(presentation, get_mission_spotlight_video(), "example-files/gyp-thumbnail.png", "Mission Spotlight")
+insert_video_slide(presentation, "media/mission-spotlight-subbed.mp4", "media/mission-spotlight.png", "Mission Spotlight")
 
 # song service
 insert_title_with_logo_slide(presentation, "Song Service")
@@ -78,8 +90,8 @@ insert_thithes_and_offerings_slides(presentation, unallocated_offerings)
 
 # special music
 insert_title_with_logo_slide(presentation, "Special Music")
-if special_item_video != "":
-    insert_video_slide(presentation, special_item_video, "example-files/gyp-thumbnail.png", "Special Music")
+if special_item_video_url != "":
+    insert_video_slide(presentation, "media/special-item.mp4", "media/special-item.png")
 
 # scripture reading
 insert_title_with_logo_slide(presentation, "Scripture Reading")
@@ -91,8 +103,8 @@ if sermon_slides != "":
     merge_pptx(presentation, sermon_slides)
 
 insert_title_with_logo_slide(presentation, "Meditation")
-if meditation_video != "":
-    insert_video_slide(presentation, meditation_video, "example-files/gyp-thumbnail.png", "Meditation")
+if meditation_video_url != "":
+    insert_video_slide(presentation, "media/meditation.mp4", "media/meditation.png")
 
 # closing song
 insert_title_with_logo_slide(presentation, "Closing Song")
@@ -102,3 +114,7 @@ insert_hymn(presentation, closing_song_hymn)
 insert_title_with_logo_slide(presentation, "Closing Prayer")
 insert_title_with_logo_slide(presentation, "Closing Remarks")
 insert_end_slide(presentation)
+
+delete_template_slides(presentation)
+presentation.save("output/ws_output.pptx")
+print("Test presentation generated successfully!")
