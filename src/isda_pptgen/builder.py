@@ -98,7 +98,7 @@ def insert_text(pragraph, text:str, size:int, color:str="white", font:str="extra
         set_superscript(custom_run.font)
 
 
-def autoplay_media(media):
+def make_media_autoplay(media):
     """Sets the media to autoplay in a really ugly way that I don't understand but it works."""
     def xpath(el, query):
         """Helper function to find elements in the XML tree."""
@@ -170,7 +170,7 @@ def insert_video_slide(presentation:Presentation, video_path:str, thumbnail_path
     video = slide.shapes.add_movie(video_path, Inches(left), 0, Inches(width), Inches(height), poster_frame_image=thumbnail_path)
     slide.shapes._spTree.remove(video._element)
     slide.shapes._spTree.insert(2, video._element)
-    autoplay_media(video)
+    make_media_autoplay(video)
 
 def insert_image_slide(presentation:Presentation, image_path:str, caption:str=""):
     """Inserts a slide with an image and a caption."""

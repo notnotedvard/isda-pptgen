@@ -41,6 +41,47 @@ def extract_first_frame(video_path: str, output_path: str) -> None:
 
     subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+def merge_subtitles(video_path: str, subtitle_path: str, output_path: str) -> None:
+    """Embeds an SRT subtitle file into an MP4 video using ffmpeg soft-coding."""
+    check_dependencies(os.path.dirname(output_path) or ".")
+
+    print(f"Merging subtitles from {subtitle_path} into video {video_path}...")
+
+    command = [
+        "ffmpeg",
+        "-i", video_path,
+        "-i", subtitle_path,
+        "-c:v", "copy",
+        "-c:a", "copy",
+        "-c:s", "mov_text",
+        "-y",
+        output_path,
+    ]
+
+    subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) 
+    print(f"Subtitles merged and saved to {output_path}.")
+
+def burn_subtitles(video_path: str, subtitle_path: str, output_path: str) -> None:
+    """Hardcodes (burns) an SRT subtitle file into an MP4 video using ffmpeg."""
+    check_dependencies(os.path.dirname(output_path) or ".")
+
+    print(f"Burning subtitles from {subtitle_path} into video {video_path}...")
+    
+    # Escape path characters for ffmpeg's subtitles filter
+    escaped_sub = str(subtitle_path).replace("\\", "/").replace(":", "\\:")
+    
+    command = [
+        "ffmpeg",
+        "-i", video_path,
+        "-vf", f"subtitles={escaped_sub}",
+        "-c:a", "copy",
+        "-y",
+        output_path,
+    ]
+
+    subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) 
+    print(f"Subtitles burned and saved to {output_path}.")
+
 def download_youtube_video(
     url: str, 
     output_dir: str = "media", 
