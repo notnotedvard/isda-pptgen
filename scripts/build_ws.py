@@ -13,6 +13,7 @@ from isda_pptgen.builder import (
     insert_start_slide,
     insert_title_with_logo_slide,
     insert_video_slide,
+    insert_thithes_and_offerings_slides,
     merge_pptx,
 )
 
@@ -20,10 +21,9 @@ def get_mission_spotlight_video():
     """Downloads the mission spotlight and returns the path to the video file and the thumbnail image."""
     return "example-files/gyp.mp4"
 
-
-def insert_thithes_and_offerings_slides(presentation, unallocated_offerings):
-    """Inserts the slides for the thithes and offerings given the unallocated offerings."""
-
+def get_yt_video(url:str):
+    """Downloads the youtube video and returns the path to the video file and the thumbnail image."""
+    return "example-files/gyp.mp4", "example-files/gyp-thumbnail.png"
 
 date = datetime.date.fromisoformat("2024-06-15")
 song_service_hymns = [526, 526]

@@ -13,7 +13,6 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
 
 from isda_pptgen.duplicate import duplicate_slide
-from isda_pptgen.merge import merge_pptx
 
 # defining the template slides in the order they appear in the template
 TEMPLATE = (
@@ -45,6 +44,15 @@ FONTS = {
     "extrabold": "Nunito ExtraBold",
     "semibold": "Nunito SemiBold"
 }
+
+def clear_media_folder():
+    """Clears the media folder of all files."""
+    import os
+    import glob
+    files = glob.glob("media/*")
+    for f in files:
+        os.remove(f)
+    print("Media folder cleared.")
 
 def insert_text(pragraph, text:str, size:int, color:str="white", font:str="extrabold", superscript:bool=False):
     """

@@ -2,6 +2,7 @@ venv
 .idea
 .vscode
 output
+media
 hymns/*
 ~$*
 __pycache__/*
