@@ -1,7 +1,7 @@
 venv
 .idea
 .vscode
-output.pptx
+output
 hymns/*
 ~$*
 __pycache__/*
