@@ -113,6 +113,7 @@ def download_youtube_video(
         "writethumbnail": False,
         "writesubtitles": download_subtitles,
         "subtitleslangs": ["en", "en-US", "en-GB"] if download_subtitles else [],
+        "remote_components": ["ejs:github"],
         "postprocessors": [
             {
                 "key": "FFmpegVideoConvertor",

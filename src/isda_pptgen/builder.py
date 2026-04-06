@@ -51,7 +51,8 @@ def clear_media_folder():
     import glob
     files = glob.glob("media/*")
     for f in files:
-        os.remove(f)
+        if os.path.isfile(f):
+            os.remove(f)
     print("Media folder cleared.")
 
 def insert_text(pragraph, text:str, size:int, color:str="white", font:str="extrabold", superscript:bool=False):
