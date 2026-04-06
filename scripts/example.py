@@ -13,6 +13,7 @@ from isda_pptgen.builder import (
     insert_start_slide,
     insert_title_with_logo_slide,
     insert_video_slide,
+    insert_thithes_and_offerings_slides,
     merge_pptx,
 )
 
@@ -27,8 +28,9 @@ insert_video_slide(presentation, "example-files/gyp.mp4", "example-files/gyp-thu
 insert_image_slide(presentation, "example-files/gyp-thumbnail.png", "")
 insert_chorus_slide(presentation, "Chorus", "This is text in a chorus slide\nit would naturally have\nmultiple lines\nright?")
 insert_hymn(presentation, 12)
+insert_thithes_and_offerings_slides(presentation, "Something Special")
 insert_end_slide(presentation)
 
 delete_template_slides(presentation)
-presentation.save("example-files/output.pptx")
+presentation.save("output/output.pptx")
 print("Test presentation generated successfully!")
