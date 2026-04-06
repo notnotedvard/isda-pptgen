@@ -20,6 +20,8 @@ TEMPLATE = (
     "media_with_caption_slide",
     "simple_title_slide",
     "title_with_logo_slide",
+    "welcome_and_announcements_slide",
+    "sermon_title_slide",
     "song_title_slide",
     "chorus_slide",
     "scripture_slide",
@@ -37,7 +39,8 @@ TEMPLATE = (
 COLORS = {
     "white": RGBColor(255, 255, 255),
     "pink": RGBColor(242, 207, 248),
-    "green": RGBColor(217, 242, 208)
+    "green": RGBColor(217, 242, 208),
+    "blue": RGBColor(166, 202, 236)
 }
 
 FONTS = {
@@ -234,6 +237,28 @@ def insert_title_with_logo_slide(presentation:Presentation, title:str):
             title_paragraph.alignment = PP_ALIGN.LEFT
             insert_text(title_paragraph, title, size=2, color="white")
 
+def insert_welcome_and_announcements_slide(presentation:Presentation):
+    """Inserts the welcome and announcements slide."""
+    duplicate_slide(presentation, TEMPLATE.index("welcome_and_announcements_slide"))
+
+def insert_sermon_title_slide(presentation:Presentation, sermon_title:str, preacher:str=""):
+    """Inserts a slide with the title of the sermon."""
+    slide = duplicate_slide(presentation, TEMPLATE.index("sermon_title_slide"))
+
+    # changing the contents of the slide
+    for shape in slide.shapes:
+        if shape.name == "title":
+            shape.text_frame.clear()
+            title_paragraph = shape.text_frame.paragraphs[0]
+            title_paragraph.alignment = PP_ALIGN.LEFT
+            insert_text(title_paragraph, "Sermon : \n", size=2, color="blue")
+            insert_text(title_paragraph, sermon_title, size=2, color="white")
+        elif shape.name == "preacher":
+            shape.text_frame.clear()
+            preacher_paragraph = shape.text_frame.paragraphs[0]
+            preacher_paragraph.alignment = PP_ALIGN.LEFT
+            insert_text(preacher_paragraph, preacher, size=1, color="white")
+
 def insert_song_title_slide(presentation:Presentation, number:int, title:str):
     """Inserts a slide with the title of the song."""
     number = str(f"{number:03}")
@@ -390,7 +415,7 @@ def insert_hymn(presentation:Presentation, number:int):
     cursor = db.cursor()
 
     hymn_name = cursor.execute("SELECT name FROM hymns WHERE id = ?", (number,)).fetchone()[0]
-    print(f"Inserting slides for hymn #{number:03}: {hymn_name}")
+    # print(f"Inserting slides for hymn #{number:03}: {hymn_name}") # debug
     cursor.execute("SELECT verse_text, verse_number FROM verses WHERE hymn_id = ? ORDER BY verse_number", (number,))
     verses = cursor.fetchall()
     cursor.execute("SELECT refrain_text, refrain_position FROM refrains WHERE hymn_id = ? ORDER BY refrain_position", (number,))

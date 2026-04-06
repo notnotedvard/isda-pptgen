@@ -51,6 +51,8 @@ def merge_subtitles(video_path: str, subtitle_path: str, output_path: str) -> No
         "ffmpeg",
         "-i", video_path,
         "-i", subtitle_path,
+        "-map", "0",
+        "-map", "1",
         "-c:v", "copy",
         "-c:a", "copy",
         "-c:s", "mov_text",
