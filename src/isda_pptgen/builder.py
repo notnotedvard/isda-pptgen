@@ -24,6 +24,9 @@ TEMPLATE = (
     "song_title_slide",
     "chorus_slide",
     "scripture_slide",
+    "thithes_and_offerings_slide_0",
+    "thithes_and_offerings_slide_1",
+    "thithes_and_offerings_slide_2",
     "end_slide",
 )
 
@@ -182,6 +185,11 @@ def insert_image_slide(presentation:Presentation, image_path:str, caption:str=""
     slide.shapes._spTree.remove(image._element)
     slide.shapes._spTree.insert(2, image._element)
 
+def insert_images(presentation:Presentation, images:tuple, caption:str=""):
+    """Batch inserts images into the presentation. Each image will be on a separate slide. The caption will be the same for all the images."""
+    for image in images:
+        insert_image_slide(presentation, image, caption)
+
 def insert_simple_title_slide(presentation:Presentation, title:str):
     """Inserts a slide with a simple title."""
     slide = duplicate_slide(presentation, TEMPLATE.index("simple_title_slide"))
@@ -193,7 +201,6 @@ def insert_simple_title_slide(presentation:Presentation, title:str):
             title_paragraph = shape.text_frame.paragraphs[0]
             title_paragraph.alignment = PP_ALIGN.CENTER
             insert_text(title_paragraph, title, size=2, colored=False)
-
 
 def insert_title_with_logo_slide(presentation:Presentation, title:str):
     """Inserts a slide with a title and a logo."""
@@ -316,6 +323,21 @@ def insert_scripture_slide(presentation:Presentation, reference:str, text:tuple,
             reference_paragraph = shape.text_frame.paragraphs[0]
             reference_paragraph.alignment = PP_ALIGN.CENTER
             insert_text(reference_paragraph, reference, size=0, colored=True)
+
+def insert_thithes_and_offerings_slides(presentation:Presentation, unallocated_offerings:str):
+    """Inserts the slides for the thithes and offerings given the unallocated offerings."""
+    slide = duplicate_slide(presentation, TEMPLATE.index("thithes_and_offerings_slide_0"))
+
+    # changing the contents of the slide
+    for shape in slide.shapes:
+        if shape.name == "unallocated_offerings":
+            shape.text_frame.clear()
+            reference_paragraph = shape.text_frame.paragraphs[0]
+            reference_paragraph.alignment = PP_ALIGN.CENTER
+            insert_text(reference_paragraph, f"Today’s unallocated offerings will go towards {unallocated_offerings}", size=0, colored=True)
+    duplicate_slide(presentation, TEMPLATE.index("thithes_and_offerings_slide_1"))
+    duplicate_slide(presentation, TEMPLATE.index("thithes_and_offerings_slide_2"))
+    insert_chorus_slide(presentation, "Doxology", "Praise God, from whom all blessings flow\nPraise Him, all creatures here below\nPraise Him above, ye heavenly host\nPraise Father, Son and Holy Ghost\nAmen!")
 
 def insert_end_slide(presentation:Presentation):
     """Inserts the end slide."""

@@ -20,13 +20,6 @@ def get_mission_spotlight_video():
     """Downloads the mission spotlight and returns the path to the video file and the thumbnail image."""
     return "example-files/gyp.mp4"
 
-# the following "insert" functions should be moved to builder.py and should be implemented there, but for now they are just placeholders here
-
-def insert_hymn(presentation, hymn_number):
-    """Inserts the slides for a hymn given its number."""
-
-def isert_images(path):
-    """Inserts the images for a given path."""
 
 def insert_thithes_and_offerings_slides(presentation, unallocated_offerings):
     """Inserts the slides for the thithes and offerings given the unallocated offerings."""
