@@ -582,25 +582,51 @@ class ThemePart(XmlPart):
     partname_template = "/ppt/theme/theme%d.xml"
 
     @classmethod
-    def new(cls, ppt, element):
-        existing = [
-            i.target_partname
-            for i in _object_rels(ppt.part)
-            if "theme" in i.target_partname
-        ]
-        partname_str = cls.partname_template % (len(existing) + 1)
+    def new(cls, master_part, element):
+        """
+        Create a new, independent ThemePart.
 
+        We deliberately scan the *package* (not just the presentation rels) to
+        find all existing theme partnames so we never collide with a theme that
+        is already owned by another master.
+
+        :param master_part: The SlideMasterPart that will own this theme.
+        :param element:     The serialised XML bytes for the theme.
+        """
+        # Walk the whole package to find every partname that looks like a theme.
+        try:
+            package = master_part.package
+            if not isinstance(package, __import__("pptx").package.Package):
+                package = package.package
+        except Exception:
+            package = None
+
+        existing: list = []
+        if package is not None:
+            try:
+                for part in package.iter_parts():
+                    pn = str(part.partname)
+                    if "/theme/theme" in pn:
+                        existing.append(pn)
+            except Exception:
+                pass
+
+        # Also collect from the master's own rels as a fallback
+        for rel in _object_rels(master_part):
+            pn = str(getattr(rel, "target_partname", ""))
+            if "/theme/theme" in pn and pn not in existing:
+                existing.append(pn)
+
+        n = 1
+        partname_str = cls.partname_template % n
         while partname_str in existing:
-            import random
-            import string
-
-            random_part = "".join(random.choice(string.ascii_letters) for i in range(2))
-            partname_str = cls.partname_template % (random_part, len(existing) + 1)
+            n += 1
+            partname_str = cls.partname_template % n
 
         part = cls.load(
             PackURI(partname_str),
             CT.OFC_THEME,
-            ppt,
+            master_part,
             element,
         )
         return part
@@ -675,16 +701,19 @@ def clone_slide_master(pres, slide_master):
             else:
                 master_slide_ref.part.rels.get_or_add(rel.reltype, rel._target)
 
-        # Themes need to be copied completely
+        # Themes need to be copied completely.
+        # IMPORTANT: register the theme ONLY on the master's own rels, not on
+        # pres.part.  Adding it to pres.part causes get_or_add to deduplicate
+        # by target, so a second cloned master ends up pointing at the same
+        # theme file as the first — which PowerPoint flags as corruption.
         if rel.reltype == RT.THEME:
             targ = rel.target_part
 
             new_el = parse_xml(copy.deepcopy(targ.blob))
             new_el.set("id", str(randrange(10**5, 10**9)))
 
-            new_ref = ThemePart.new(pres, etree.tostring(new_el))
+            new_ref = ThemePart.new(master_slide_ref.part, etree.tostring(new_el))
             master_slide_ref.part.rels.get_or_add(RT.THEME, new_ref)
-            pres.part.rels.get_or_add(RT.THEME, new_ref)
 
     # Ensure all shapes of the Slide Master are set up correctly
     _clone_sml_shapes(slide_master, master_slide_ref)
