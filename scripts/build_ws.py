@@ -28,35 +28,6 @@ import json
 import urllib.request
 import urllib.parse
 
-# Worship service details
-date = datetime.date.fromisoformat("2024-06-15")
-mission_spotlight_url = "https://www.youtube.com/watch?v=OznS1gAwe0c"
-song_service_hymns = [526, 526]
-call_to_worship_scripture_reference = "Psalm 147:1"
-opening_song_hymn = 473
-childrens_story_ppt = ""
-thermometers_slides = ""
-unallocated_offerings = "Something"
-special_item_video_url = "https://www.youtube.com/watch?v=QeS0z1_cpNI"
-scripture_reading_reference = "John 3:16"
-sermon_title = "God's Free Health Plan"
-sermon_slides = ""
-preacher = "John Doe"
-meditation_video_url = ""
-closing_song_hymn = 633
-
-presentation = Presentation("assets/template.pptx")
-# clear_media_folder()
-
-# Downloading and preparing media
-if input("Download media? (y/N) ").lower() == "y":
-    if mission_spotlight_url != "":
-        download_youtube_video(mission_spotlight_url, output_dir="media", filename="mission-spotlight", download_subtitles=True)
-        burn_subtitles("media/mission-spotlight.mp4", "media/mission-spotlight.en.srt", "media/mission-spotlight-subbed.mp4")
-    if special_item_video_url != "":
-        download_youtube_video(special_item_video_url, output_dir="media", filename="special-item", download_subtitles=False)
-    if meditation_video_url != "":
-        download_youtube_video(meditation_video_url, output_dir="media", filename="meditation", download_subtitles=False)
 
 def get_bible_verses(reference, version="kjv"):
     """
@@ -76,6 +47,49 @@ def get_bible_verses(reference, version="kjv"):
     except Exception as e:
         print(f"Error fetching {reference}: {e}")
         return (("?", "Error fetching scripture."),)
+
+def get_filename(date: datetime.date) -> str:
+    """Generates a filename based on the date."""
+    day = date.day
+    if 11 <= (day % 100) <= 13:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+    
+    month_year = date.strftime(" %B %Y")
+    return f"ISDA Church Slides - {day}{suffix}{month_year}"
+
+
+# Worship service details
+date = datetime.date.fromisoformat("2026-04-11")
+mission_spotlight_url = "https://www.youtube.com/watch?v=-3VbDoagdgI"
+song_service_hymns = [88, 216]
+call_to_worship_scripture_reference = "Exodus 14:14"
+opening_song_hymn = 532
+childrens_story_ppt = ""
+thermometers_slides = "media/offerings.pptx"
+unallocated_offerings = "Combined Budget"
+special_item_video_url = ""
+scripture_reading_reference = "John 3:16"
+sermon_title = "Jesus is Life"
+sermon_slides = "media/sermon.pptx"
+preacher = "Maro Rakotondramiandra"
+meditation_video_url = ""
+closing_song_hymn = 159
+
+filename = get_filename(date)
+presentation = Presentation("assets/template.pptx")
+
+# Downloading and preparing media
+if input("Download media? (y/N) ").lower() == "y":
+    clear_media_folder()
+    if mission_spotlight_url != "":
+        download_youtube_video(mission_spotlight_url, output_dir="media", filename="mission-spotlight", download_subtitles=True)
+        burn_subtitles("media/mission-spotlight.mp4", "media/mission-spotlight.en.srt", "media/mission-spotlight-subbed.mp4")
+    if special_item_video_url != "":
+        download_youtube_video(special_item_video_url, output_dir="media", filename="special-item", download_subtitles=False)
+    if meditation_video_url != "":
+        download_youtube_video(meditation_video_url, output_dir="media", filename="meditation", download_subtitles=False)
 
 # fetch scripture
 print("Fetching scripture...")
@@ -153,5 +167,5 @@ insert_title_with_logo_slide(presentation, "Closing Remarks")
 insert_end_slide(presentation)
 
 delete_template_slides(presentation)
-presentation.save("output/ws_output.pptx")
-print("Done! Presentation generated successfully at output/ws_output.pptx")
+presentation.save(f"output/{filename}.pptx")
+print(f"Done! Presentation generated successfully at output/{filename}.pptx")

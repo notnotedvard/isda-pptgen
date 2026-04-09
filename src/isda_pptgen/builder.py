@@ -49,14 +49,18 @@ FONTS = {
 }
 
 def clear_media_folder():
-    """Clears the media folder of all files."""
+    """Clears the media folder of png, srt and mp4 files."""
     import os
     import glob
-    files = glob.glob("media/*")
+    extensions = ["*.png", "*.srt", "*.mp4"]
+    files = []
+    for ext in extensions:
+        files.extend(glob.glob(f"media/{ext}"))
+    
     for f in files:
         if os.path.isfile(f):
             os.remove(f)
-    print("Media folder cleared.")
+    print("Media folder cleared of png, srt and mp4 files.")
 
 def insert_text(pragraph, text:str, size:int, color:str="white", font:str="extrabold", superscript:bool=False):
     """

@@ -69,14 +69,13 @@ def burn_subtitles(video_path: str, subtitle_path: str, output_path: str) -> Non
 
     print(f"Burning subtitles from {subtitle_path} into video {video_path}...")
     
-    # Escape path characters for ffmpeg's subtitles filter
-    escaped_sub = str(subtitle_path).replace("\\", "/").replace(":", "\\:")
-    
     command = [
         "ffmpeg",
         "-i", video_path,
-        "-vf", f"subtitles={escaped_sub}",
+        "-i", subtitle_path,
+        "-c:v", "copy",
         "-c:a", "copy",
+        "-c:s", "mov_text",
         "-y",
         output_path,
     ]
