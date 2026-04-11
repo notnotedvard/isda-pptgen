@@ -1,0 +1,44 @@
+# Copy this template to scripts/build_ws.yml and fill in your local worship service details.
+# The local config file is ignored by git so your private or environment-specific values stay local.
+
+# ISO format date for the service
+# Example: 2026-04-11
+# date: 2026-04-11
+
+# YouTube URL for the mission spotlight video
+# mission_spotlight_url: ""
+
+# Hymn numbers for the song service
+# song_service_hymns: []
+
+# Scripture reference for call to worship
+# call_to_worship_scripture_reference: ""
+
+# Hymn number for the opening song
+# opening_song_hymn: null
+
+# Optional PPTX file for the children's story
+# childrens_story_ppt: ""
+
+# Optional offering thermometer slides
+# thermometers_slides: ""
+
+# The name of the default unallocated offering line item
+# unallocated_offerings: ""
+
+# Optional URL for special item video
+# special_item_video_url: ""
+
+# Scripture reference for scripture reading
+# scripture_reading_reference: ""
+
+# Sermon details
+# sermon_title: ""
+# sermon_slides: ""
+# preacher: ""
+
+# Optional meditation video URL
+# meditation_video_url: ""
+
+# Hymn number for the closing song
+# closing_song_hymn: null

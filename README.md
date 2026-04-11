@@ -32,6 +32,14 @@ uv run isda-pptgen --help
   ```bash
   uv run isda-pptgen build-ws --config configs/ws.yml
   ```
+
+  If you want to use the standalone script directly, copy the YAML template at `scripts/build_ws.template.yml` to `scripts/build_ws.yml`, fill in your values, and run:
+
+  ```bash
+  python scripts/build_ws.py --config scripts/build_ws.yml
+  ```
+
+  The local `scripts/build_ws.yml` file is intentionally ignored by git so you can keep local changes private.
 - **Generate Hymn Lyrics:**
   ```bash
   uv run isda-pptgen generate-lyrics [--force]

@@ -1,18 +1,23 @@
-"""Generates a sample presentation using the pptx_builder module."""
+"""Generate a worship service presentation from a YAML config file."""
 
+import argparse
 import datetime
+from importlib import import_module
+from pathlib import Path
 from pptx import Presentation
+
+try:
+    yaml = import_module("yaml")
+except ModuleNotFoundError:
+    yaml = None
 
 from isda_pptgen.builder import (
     clear_media_folder,
     delete_template_slides,
-    insert_chorus_slide,
     insert_end_slide,
     insert_hymn,
-    insert_image_slide,
     insert_images,
     insert_scripture_slide,
-    insert_simple_title_slide,
     insert_welcome_and_announcements_slide,
     insert_sermon_title_slide,
     insert_start_slide,
@@ -21,12 +26,50 @@ from isda_pptgen.builder import (
     insert_thithes_and_offerings_slides,
 )
 
-from isda_pptgen.ytdl import download_youtube_video, merge_subtitles, burn_subtitles
+from isda_pptgen.ytdl import download_youtube_video, burn_subtitles
 from isda_pptgen.merge import merge_pptx
 import os
 import json
 import urllib.request
 import urllib.parse
+
+
+CONFIG_TEMPLATE = Path(__file__).with_name("build_ws.template.yml")
+DEFAULT_CONFIG = Path(__file__).with_name("build_ws.yml")
+
+
+def load_yaml_config(path: Path) -> dict:
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Config file not found at {path}. Copy the template from {CONFIG_TEMPLATE} and update its values."
+        )
+    if yaml is None:
+        raise ImportError(
+            "PyYAML is required to load the YAML config file. Install it with 'uv sync' or pip."
+        )
+    with path.open("r", encoding="utf-8") as fh:
+        return yaml.safe_load(fh) or {}
+
+
+def parse_optional_int(value):
+    if value is None or value == "":
+        return None
+    return int(value)
+
+
+def parse_int_list(value):
+    if value is None:
+        return []
+    if isinstance(value, int):
+        return [value]
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped == "":
+            return []
+        return [int(part.strip()) for part in stripped.split(",") if part.strip()]
+    if isinstance(value, list):
+        return [int(item) for item in value if item is not None and str(item).strip() != ""]
+    raise ValueError(f"Unable to convert {value!r} to a list of ints")
 
 
 def get_bible_verses(reference, version="kjv"):
@@ -48,6 +91,7 @@ def get_bible_verses(reference, version="kjv"):
         print(f"Error fetching {reference}: {e}")
         return (("?", "Error fetching scripture."),)
 
+
 def get_filename(date: datetime.date) -> str:
     """Generates a filename based on the date."""
     day = date.day
@@ -60,112 +104,131 @@ def get_filename(date: datetime.date) -> str:
     return f"ISDA Church Slides - {day}{suffix}{month_year}"
 
 
-# Worship service details
-date = datetime.date.fromisoformat("2026-04-11")
-mission_spotlight_url = "https://www.youtube.com/watch?v=-3VbDoagdgI"
-song_service_hymns = [88, 216]
-call_to_worship_scripture_reference = "Exodus 14:14"
-opening_song_hymn = 532
-childrens_story_ppt = ""
-thermometers_slides = "media/offerings.pptx"
-unallocated_offerings = "Combined Budget"
-special_item_video_url = ""
-scripture_reading_reference = "John 3:16"
-sermon_title = "Jesus is Life"
-sermon_slides = "media/sermon.pptx"
-preacher = "Maro Rakotondramiandra"
-meditation_video_url = ""
-closing_song_hymn = 159
+def build_presentation(config: dict):
+    raw_date = config["date"]
+    if isinstance(raw_date, datetime.date):
+        date = raw_date
+    else:
+        date = datetime.date.fromisoformat(str(raw_date))
+        
+    mission_spotlight_url = config.get("mission_spotlight_url", "") or ""
+    song_service_hymns = parse_int_list(config.get("song_service_hymns"))
+    call_to_worship_scripture_reference = config.get("call_to_worship_scripture_reference", "") or ""
+    opening_song_hymn = parse_optional_int(config.get("opening_song_hymn"))
+    childrens_story_ppt = config.get("childrens_story_ppt", "") or ""
+    thermometers_slides = config.get("thermometers_slides", "") or ""
+    unallocated_offerings = config.get("unallocated_offerings", "") or ""
+    special_item_video_url = config.get("special_item_video_url", "") or ""
+    scripture_reading_reference = config.get("scripture_reading_reference", "") or ""
+    sermon_title = config.get("sermon_title", "") or ""
+    sermon_slides = config.get("sermon_slides", "") or ""
+    preacher = config.get("preacher", "") or ""
+    meditation_video_url = config.get("meditation_video_url", "") or ""
+    closing_song_hymn = parse_optional_int(config.get("closing_song_hymn"))
 
-filename = get_filename(date)
-presentation = Presentation("assets/template.pptx")
+    filename = get_filename(date)
+    presentation = Presentation("assets/template.pptx")
 
-# Downloading and preparing media
-if input("Download media? (y/N) ").lower() == "y":
-    clear_media_folder()
-    if mission_spotlight_url != "":
-        download_youtube_video(mission_spotlight_url, output_dir="media", filename="mission-spotlight", download_subtitles=True)
-        burn_subtitles("media/mission-spotlight.mp4", "media/mission-spotlight.en.srt", "media/mission-spotlight-subbed.mp4")
+    # Downloading and preparing media
+    if input("Download media? (y/N) ").lower() == "y":
+        clear_media_folder()
+        if mission_spotlight_url != "":
+            download_youtube_video(mission_spotlight_url, output_dir="media", filename="mission-spotlight", download_subtitles=True)
+            burn_subtitles("media/mission-spotlight.mp4", "media/mission-spotlight.en.srt", "media/mission-spotlight-subbed.mp4")
+        if special_item_video_url != "":
+            download_youtube_video(special_item_video_url, output_dir="media", filename="special-item", download_subtitles=False)
+        if meditation_video_url != "":
+            download_youtube_video(meditation_video_url, output_dir="media", filename="meditation", download_subtitles=False)
+
+    # fetch scripture
+    print("Fetching scripture...")
+    call_to_worship_scripture = get_bible_verses(call_to_worship_scripture_reference, version="kjv")
+    scripture_reading = get_bible_verses(scripture_reading_reference, version="kjv")
+
+    print("Building presentation...")
+    # start slides
+    insert_start_slide(presentation, date)
+    insert_title_with_logo_slide(presentation, "Sabbath School Offering & Mission Spotlight")
+
+    # mission spotlight
+    insert_video_slide(presentation, "media/mission-spotlight-subbed.mp4", "media/mission-spotlight.png", "Mission Spotlight")
+
+    # song service
+    insert_title_with_logo_slide(presentation, "Song Service")
+    for hymn_number in song_service_hymns:
+        insert_hymn(presentation, hymn_number)
+
+    # announcements
+    insert_welcome_and_announcements_slide(presentation)
+    # insert_title_with_logo_slide(presentation, "Welcome and Announcements") # does not include animation
+    announcement_dir = "media/announcements"
+    if os.path.exists(announcement_dir):
+        images = tuple(sorted([os.path.join(announcement_dir, f) for f in os.listdir(announcement_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]))
+        insert_images(presentation, images)
+    # merge_pptx(presentation, "media/announcements/announcements.pptx")
+
+    # opening song
+    insert_title_with_logo_slide(presentation, "Call to Worship")
+    insert_scripture_slide(presentation, call_to_worship_scripture_reference, call_to_worship_scripture)
+    insert_title_with_logo_slide(presentation, "Opening Song")
+    if opening_song_hymn is not None:
+        insert_hymn(presentation, opening_song_hymn)
+
+    # intercessory prayer
+    insert_title_with_logo_slide(presentation, "Intercessory Prayer")
+
+    # children's story
+    insert_title_with_logo_slide(presentation, "Children's Story")
+    if childrens_story_ppt != "":
+        merge_pptx(presentation, childrens_story_ppt)
+
+    # tithes and offerings
+    insert_title_with_logo_slide(presentation, "Tithes and Offerings")
+    if thermometers_slides != "":
+        merge_pptx(presentation, thermometers_slides)
+    insert_thithes_and_offerings_slides(presentation, unallocated_offerings)
+
+    # special music
+    insert_title_with_logo_slide(presentation, "Special Music")
     if special_item_video_url != "":
-        download_youtube_video(special_item_video_url, output_dir="media", filename="special-item", download_subtitles=False)
+        insert_video_slide(presentation, "media/special-item.mp4", "media/special-item.png")
+
+    # scripture reading
+    insert_title_with_logo_slide(presentation, "Scripture Reading")
+    insert_scripture_slide(presentation, scripture_reading_reference, scripture_reading)
+
+    # sermon
+    insert_sermon_title_slide(presentation, sermon_title, preacher)
+    # insert_title_with_logo_slide(presentation, f"Sermon : {sermon_title}") # should include preacher aswell
+    if sermon_slides != "":
+        merge_pptx(presentation, sermon_slides)
+
+    insert_title_with_logo_slide(presentation, "Meditation")
     if meditation_video_url != "":
-        download_youtube_video(meditation_video_url, output_dir="media", filename="meditation", download_subtitles=False)
+        insert_video_slide(presentation, "media/meditation.mp4", "media/meditation.png")
 
-# fetch scripture
-print("Fetching scripture...")
-call_to_worship_scripture = get_bible_verses(call_to_worship_scripture_reference, version="kjv")
-scripture_reading = get_bible_verses(scripture_reading_reference, version="kjv")
+    # closing song
+    insert_title_with_logo_slide(presentation, "Closing Song")
+    if closing_song_hymn is not None:
+        insert_hymn(presentation, closing_song_hymn)
 
-print("Building presentation...")
-# start slides
-insert_start_slide(presentation, date)
-insert_title_with_logo_slide(presentation, "Sabbath School Offering & Mission Spotlight")
+    # closing
+    insert_title_with_logo_slide(presentation, "Closing Prayer")
+    insert_title_with_logo_slide(presentation, "Closing Remarks")
+    insert_end_slide(presentation)
 
-# mission spotlight
-insert_video_slide(presentation, "media/mission-spotlight-subbed.mp4", "media/mission-spotlight.png", "Mission Spotlight")
+    delete_template_slides(presentation)
+    presentation.save(f"output/{filename}.pptx")
+    print(f"Done! Presentation generated successfully at output/{filename}.pptx")
 
-# song service
-insert_title_with_logo_slide(presentation, "Song Service")
-for hymn_number in song_service_hymns:
-    insert_hymn(presentation, hymn_number)
 
-# announcements
-insert_welcome_and_announcements_slide(presentation)
-# insert_title_with_logo_slide(presentation, "Welcome and Announcements") # does not include animation
-announcement_dir = "media/announcements"
-if os.path.exists(announcement_dir):
-    images = tuple(sorted([os.path.join(announcement_dir, f) for f in os.listdir(announcement_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]))
-    insert_images(presentation, images)
-# merge_pptx(presentation, "media/announcements/announcements.pptx")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate a worship service presentation from a YAML config file.")
+    parser.add_argument(
+        "--config",
+        default=DEFAULT_CONFIG,
+        help="Path to the YAML configuration file",
+    )
+    args = parser.parse_args()
 
-# opening song
-insert_title_with_logo_slide(presentation, "Call to Worship")
-insert_scripture_slide(presentation, call_to_worship_scripture_reference, call_to_worship_scripture)
-insert_title_with_logo_slide(presentation, "Opening Song")
-insert_hymn(presentation, opening_song_hymn)
-
-# intercessory prayer
-insert_title_with_logo_slide(presentation, "Intercessory Prayer")
-
-# children's story
-insert_title_with_logo_slide(presentation, "Children's Story")
-if childrens_story_ppt != "":
-    merge_pptx(presentation, childrens_story_ppt)
-
-# tithes and offerings
-insert_title_with_logo_slide(presentation, "Tithes and Offerings")
-if thermometers_slides != "":
-    merge_pptx(presentation, thermometers_slides)
-insert_thithes_and_offerings_slides(presentation, unallocated_offerings)
-
-# special music
-insert_title_with_logo_slide(presentation, "Special Music")
-if special_item_video_url != "":
-    insert_video_slide(presentation, "media/special-item.mp4", "media/special-item.png")
-
-# scripture reading
-insert_title_with_logo_slide(presentation, "Scripture Reading")
-insert_scripture_slide(presentation, scripture_reading_reference, scripture_reading)
-
-# sermon
-insert_sermon_title_slide(presentation, sermon_title, preacher)
-# insert_title_with_logo_slide(presentation, f"Sermon : {sermon_title}") # should include preacher aswell
-if sermon_slides != "":
-    merge_pptx(presentation, sermon_slides)
-
-insert_title_with_logo_slide(presentation, "Meditation")
-if meditation_video_url != "":
-    insert_video_slide(presentation, "media/meditation.mp4", "media/meditation.png")
-
-# closing song
-insert_title_with_logo_slide(presentation, "Closing Song")
-insert_hymn(presentation, closing_song_hymn)
-
-# closing
-insert_title_with_logo_slide(presentation, "Closing Prayer")
-insert_title_with_logo_slide(presentation, "Closing Remarks")
-insert_end_slide(presentation)
-
-delete_template_slides(presentation)
-presentation.save(f"output/{filename}.pptx")
-print(f"Done! Presentation generated successfully at output/{filename}.pptx")
+    build_presentation(load_yaml_config(Path(args.config)))

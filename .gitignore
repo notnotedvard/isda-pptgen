@@ -13,7 +13,7 @@ gyp-thumbnail.png
 /cache/*
 
 example-files/*
-*.yml# Environments
+scripts/build_ws.yml
 .env
 .venv
 env/

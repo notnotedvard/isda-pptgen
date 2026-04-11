@@ -10,6 +10,7 @@ dependencies = [
     "pandas>=3.0.2",
     "python-pptx>=1.0.2",
     "yt-dlp[curl-cffi,default]>=2026.3.17",
+    "PyYAML>=6.0",
 ]
 
 [project.scripts]
