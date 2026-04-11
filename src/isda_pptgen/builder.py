@@ -21,6 +21,7 @@ TEMPLATE = (
     "simple_title_slide",
     "title_with_logo_slide",
     "welcome_and_announcements_slide",
+    "membership_transfer_slide",
     "sermon_title_slide",
     "song_title_slide",
     "chorus_slide",
@@ -40,7 +41,8 @@ COLORS = {
     "white": RGBColor(255, 255, 255),
     "pink": RGBColor(242, 207, 248),
     "green": RGBColor(217, 242, 208),
-    "blue": RGBColor(166, 202, 236)
+    "blue": RGBColor(166, 202, 236),
+    "yellow": RGBColor(242, 219, 132),
 }
 
 FONTS = {
@@ -244,6 +246,32 @@ def insert_title_with_logo_slide(presentation:Presentation, title:str):
 def insert_welcome_and_announcements_slide(presentation:Presentation):
     """Inserts the welcome and announcements slide."""
     duplicate_slide(presentation, TEMPLATE.index("welcome_and_announcements_slide"))
+
+def insert_membership_transfer_slide(presentation:Presentation, in_or_out:str, reading:str, name:str, church:str):
+    """Inserts a slide for a membership transfer.
+    - in_or_out: "in" or "out"
+    - reading: the reading for the transfer (e.g. "first", "second",
+    - name: the name of the person transferring
+    - church: the church they are transferring from/to
+    """
+    in_or_out = in_or_out.lower()
+    if in_or_out not in ["in", "out"]:
+        raise ValueError("in_or_out must be either 'in' or 'out'")
+    from_or_to = "from" if in_or_out == "in" else "to"
+    slide = duplicate_slide(presentation, TEMPLATE.index("membership_transfer_slide"))
+
+    # changing the contents of the slide
+    for shape in slide.shapes:
+        if shape.name == "text":
+            shape.text_frame.clear()
+            text_paragraph = shape.text_frame.paragraphs[0]
+            text_paragraph.alignment = PP_ALIGN.CENTER
+            insert_text(text_paragraph, f"Membership Transfer {in_or_out}\n", size=2, color="white", font="semibold")
+            insert_text(text_paragraph, f"{reading.capitalize()} reading\n\n", size=2, color="pink", font="semibold")
+            insert_text(text_paragraph, f"{name}\n\n", size=2, color="yellow")
+            insert_text(text_paragraph, f"{from_or_to} ", size=2, color="white", font="semibold")
+            insert_text(text_paragraph, church, size=2, color="green", font="semibold")
+
 
 def insert_sermon_title_slide(presentation:Presentation, sermon_title:str, preacher:str=""):
     """Inserts a slide with the title of the sermon."""
