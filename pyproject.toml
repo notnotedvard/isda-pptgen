@@ -11,6 +11,7 @@ dependencies = [
     "python-pptx>=1.0.2",
     "yt-dlp[curl-cffi,default]>=2026.3.17",
     "PyYAML>=6.0",
+    "manim>=0.20.1",
 ]
 
 [project.scripts]
