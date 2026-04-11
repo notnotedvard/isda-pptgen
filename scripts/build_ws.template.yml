@@ -20,6 +20,14 @@
 # Optional PPTX file for the children's story
 # childrens_story_ppt: ""
 
+# List of membership transfers
+# Each entry should have:
+# - in_or_out: "in" or "out"
+# - reading: "First" or "Second"
+# - name: "Full Name"
+# - church: "Church Name"
+# membership_transfers: []
+
 # Optional offering thermometer slides
 # thermometers_slides: ""
 

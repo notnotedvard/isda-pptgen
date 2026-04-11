@@ -19,6 +19,7 @@ from isda_pptgen.builder import (
     insert_images,
     insert_scripture_slide,
     insert_welcome_and_announcements_slide,
+    insert_membership_transfer_slide,
     insert_sermon_title_slide,
     insert_start_slide,
     insert_title_with_logo_slide,
@@ -125,6 +126,7 @@ def build_presentation(config: dict):
     preacher = config.get("preacher", "") or ""
     meditation_video_url = config.get("meditation_video_url", "") or ""
     closing_song_hymn = parse_optional_int(config.get("closing_song_hymn"))
+    membership_transfers = config.get("membership_transfers", []) or []
 
     filename = get_filename(date)
     presentation = Presentation("assets/template.pptx")
@@ -166,6 +168,18 @@ def build_presentation(config: dict):
         images = tuple(sorted([os.path.join(announcement_dir, f) for f in os.listdir(announcement_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]))
         insert_images(presentation, images)
     # merge_pptx(presentation, "media/announcements/announcements.pptx")
+
+    # membership transfers
+    if membership_transfers:
+        insert_title_with_logo_slide(presentation, "Membership Transfers")
+        for transfer in membership_transfers:
+            insert_membership_transfer_slide(
+                presentation,
+                in_or_out=transfer.get("in_or_out"),
+                reading=transfer.get("reading"),
+                name=transfer.get("name"),
+                church=transfer.get("church")
+            )
 
     # opening song
     insert_title_with_logo_slide(presentation, "Call to Worship")
