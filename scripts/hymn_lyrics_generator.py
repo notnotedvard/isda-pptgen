@@ -1,8 +1,8 @@
 """This script generates a PowerPoint presentation with the lyrics of a hymn based on a template pptx file."""
 
+import json
 import os
 import shutil
-import sqlite3
 import time
 
 from pptx import Presentation
@@ -12,15 +12,21 @@ from isda_pptgen.builder import (
     insert_hymn,
 )
 
-DB = sqlite3.connect("assets/hymns.sqlite")
-CACHED_DB = sqlite3.connect("cache/hymns.sqlite")
-cursor = DB.cursor()
-cached_cursor = CACHED_DB.cursor()
-NUMBER_OF_HYMNS = cursor.execute("SELECT COUNT(*) FROM hymns").fetchone()[0]
+JSON_PATH = "assets/hymns.json"
+CACHE_PATH = "cache/hymns.json"
+
+with open(JSON_PATH, "r", encoding="utf-8") as f:
+    HYMNS = json.load(f)
+
+NUMBER_OF_HYMNS = len(HYMNS)
 
 def generate_hymn(number:int):
     """Genrates slides for hymn number"""
-    hymn_name = cursor.execute("SELECT name FROM hymns WHERE id = ?", (number,)).fetchone()[0]
+    hymn_name = "Unknown"
+    for hymn in HYMNS:
+        if hymn["id"] == number:
+            hymn_name = hymn["name"]
+            break
 
     # creating a presentation
     template = Presentation("assets/template.pptx")
@@ -33,30 +39,39 @@ def generate_hymn(number:int):
 FORCE_GENERATE_ALL = input("force generate all ? (y/N): ") == "y"
 start_time = time.time()
 
-for hymn_number in range(1, NUMBER_OF_HYMNS + 1):
+# Load cache to compare
+CACHED_HYMNS = {}
+if os.path.exists(CACHE_PATH):
+    try:
+        with open(CACHE_PATH, "r", encoding="utf-8") as f:
+            for ch in json.load(f):
+                CACHED_HYMNS[ch["id"]] = ch.get("lyrics", [])
+    except json.JSONDecodeError:
+        pass
+
+if not os.path.exists("hymns"):
+    os.makedirs("hymns")
+
+for hymn in HYMNS:
+    hymn_number = hymn["id"]
     try:
         if FORCE_GENERATE_ALL:
             generate_hymn(hymn_number)
         else:
-            # compare hymn number (hymn_number) from cache and hymn from db and generate if they are different
-            hymn_db = cursor.execute("SELECT * FROM verses WHERE hymn_id = ? UNION ALL SELECT * FROM refrains WHERE hymn_id = ?", (hymn_number, hymn_number)).fetchall()
-            hymn_cache = cached_cursor.execute("SELECT * FROM verses WHERE hymn_id = ? UNION ALL SELECT * FROM refrains WHERE hymn_id = ?", (hymn_number, hymn_number)).fetchall()
+            # compare hymn lyrics from cache and hymn from JSON
+            hymn_lyrics = hymn.get("lyrics", [])
+            hymn_cache = CACHED_HYMNS.get(hymn_number, [])
 
-            if hymn_db != hymn_cache:
+            if hymn_lyrics != hymn_cache:
                 generate_hymn(hymn_number)
 
-            # generate the hymn if the pptx file does not exist
-            # look for pptx files that start with hymn_number - ... .pptx
-            # if not any(fname.startswith(f"{hymn_number:03} - ") and fname.endswith(".pptx") for fname in os.listdir("hymns")):
-            #     generate_hymn(hymn_number)
     except KeyboardInterrupt:
         print("Process interrupted.")
         break
 
-print("Caching db...")
-# make a copy in cache/hymns.sqlite
+print("Caching json...")
 if not os.path.exists("cache"):
     os.makedirs("cache")
-shutil.copy("assets/hymns.sqlite", "cache/hymns.sqlite")
+shutil.copy(JSON_PATH, CACHE_PATH)
 
 print(f"Done in {time.time() - start_time:.2f} seconds.")

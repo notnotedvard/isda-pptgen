@@ -56,4 +56,3 @@ example-files/
 hymns/
 output.pptx
 *.sqlite
-!assets/hymns.sqlite

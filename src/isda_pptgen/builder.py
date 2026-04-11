@@ -413,52 +413,43 @@ def insert_end_slide(presentation:Presentation):
     duplicate_slide(presentation, TEMPLATE.index("end_slide"))
 
 def insert_hymn(presentation:Presentation, number:int):
-    """Inserts slides for a hymn from the database."""
-    import sqlite3
-    db = sqlite3.connect("assets/hymns.sqlite")
-    cursor = db.cursor()
+    """Inserts slides for a hymn from the JSON database."""
+    import json
+    
+    with open("assets/hymns.json", "r", encoding="utf-8") as f:
+        hymns_data = json.load(f)
+        
+    # Find the requested hymn
+    target_hymn = None
+    for hymn in hymns_data:
+        if hymn["id"] == number:
+            target_hymn = hymn
+            break
+            
+    if not target_hymn:
+        print(f"Hymn {number} not found!")
+        return
 
-    hymn_name = cursor.execute("SELECT name FROM hymns WHERE id = ?", (number,)).fetchone()[0]
-    # print(f"Inserting slides for hymn #{number:03}: {hymn_name}") # debug
-    cursor.execute("SELECT verse_text, verse_number FROM verses WHERE hymn_id = ? ORDER BY verse_number", (number,))
-    verses = cursor.fetchall()
-    cursor.execute("SELECT refrain_text, refrain_position FROM refrains WHERE hymn_id = ? ORDER BY refrain_position", (number,))
-    refrains = cursor.fetchall()
+    hymn_name = target_hymn["name"]
+    lyrics = target_hymn.get("lyrics", [])
 
     insert_song_title_slide(presentation, number, hymn_name)
+    
+    num_blocks = len(lyrics)
+    for i, block in enumerate(lyrics):
+        is_last = (i == num_blocks - 1)
+        b_type = block.get("type", "unknown")
+        b_label = block.get("label", "")
+        b_text = block.get("text", "")
+        
+        # Present title based on type and label
+        if b_type == "verse":
+            title = str(b_label)
+        elif b_type == "refrain":
+            title = "Refrain" if not b_label else b_label
+        elif b_type == "bridge":
+            title = "Bridge" if not b_label else b_label
+        else:
+            title = b_label
 
-    if len(refrains) == 0: # if there are no refrains, add verses one by one
-        for verse in verses[:-1]:
-            insert_smart_chorus_slide(presentation, verse[1], verse[0])
-        insert_smart_chorus_slide(presentation, verses[-1][1], verses[-1][0], True)
-    else:
-        # act according to refrain positions
-        # 0 indicates that the hymn starts with a refrain (ex: ?)
-        # 1 indicates that the hymn has a refrain after each verse
-        # 2 indicates that the hymn has a different refrain at the end (ex: 140)
-        # -> a hymn can have multiple refrains, but only one of each type
-
-        end_refrain = "" # used if the end refrain is different from the other refrains
-        hymn_refrain = ""
-        for refrain in refrains:
-            if refrain[1] == 0:
-                insert_smart_chorus_slide(presentation, "Refrain", refrain[0])
-                hymn_refrain = refrain[0]
-            elif refrain[1] == 1:
-                hymn_refrain = refrain[0]
-            elif refrain[1] == 2:
-                end_refrain = refrain[0]
-        for verse_index, verse in enumerate(verses):
-            insert_smart_chorus_slide(presentation, verse[1], verse[0])
-            if verse_index == len(verses) - 1:
-                if end_refrain != "":
-                    # if it's the last verse and there's an end refrain
-                    insert_smart_chorus_slide(presentation, "Refrain", end_refrain, True)
-                else:
-                    # if it's the last verse and there's no end refrain
-                    insert_smart_chorus_slide(presentation, "Refrain", hymn_refrain, True)
-            else:
-                # if everything is normal
-                insert_smart_chorus_slide(presentation, "Refrain", hymn_refrain)
-
-    db.close()
+        insert_smart_chorus_slide(presentation, title, b_text, is_last)
