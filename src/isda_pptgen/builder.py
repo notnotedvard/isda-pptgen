@@ -481,3 +481,89 @@ def insert_hymn(presentation:Presentation, number:int):
             title = b_label
 
         insert_smart_chorus_slide(presentation, title, b_text, is_last)
+
+def insert_external_song_by_name(presentation:Presentation, song_name:str):
+    """Inserts lyric slides for a song that is in the external songs JSON database."""
+    import json
+    import difflib
+
+    with open("assets/external_songs.json", "r", encoding="utf-8") as f:
+        songs_data = json.load(f)
+
+    # fuzzy search for the song in the database
+    song_names = [song["name"] for song in songs_data]
+    matches = difflib.get_close_matches(song_name, song_names, n=1, cutoff=0.4)
+    
+    if not matches:
+        print(f"Song '{song_name}' not found!")
+        return
+        
+    matched_name = matches[0]
+    target_song = next(song for song in songs_data if song["name"] == matched_name)
+    
+    lyrics = target_song.get("lyrics", [])
+
+    # Use a simple title slide instead of song title with number
+    insert_simple_title_slide(presentation, matched_name)
+    
+    num_blocks = len(lyrics)
+    for i, block in enumerate(lyrics):
+        is_last = (i == num_blocks - 1)
+        b_type = block.get("type", "unknown")
+        b_label = block.get("label", "")
+        b_text = block.get("text", "")
+        
+        # Present title based on type and label
+        if b_type == "verse":
+            title = str(b_label)
+        elif b_type == "refrain":
+            title = "Refrain" if not b_label else b_label
+        elif b_type == "bridge":
+            title = "Bridge" if not b_label else b_label
+        else:
+            title = b_label
+
+        insert_smart_chorus_slide(presentation, title, b_text, is_last)
+
+def insert_external_song_by_id(presentation:Presentation, song_id:int):
+    """Inserts lyric slides for a song that is in the external songs JSON database by ID."""
+    import json
+
+    with open("assets/external_songs.json", "r", encoding="utf-8") as f:
+        songs_data = json.load(f)
+
+    target_song = None
+    for song in songs_data:
+        if song.get("id") == song_id:
+            target_song = song
+            break
+            
+    if not target_song:
+        print(f"External song with ID {song_id} not found!")
+        return
+        
+    matched_name = target_song["name"]
+    lyrics = target_song.get("lyrics", [])
+
+    # Use a simple title slide instead of song title with number
+    insert_simple_title_slide(presentation, matched_name)
+    
+    num_blocks = len(lyrics)
+    for i, block in enumerate(lyrics):
+        is_last = (i == num_blocks - 1)
+        b_type = block.get("type", "unknown")
+        b_label = block.get("label", "")
+        b_text = block.get("text", "")
+        
+        # Present title based on type and label
+        if b_type == "verse":
+            title = str(b_label)
+        elif b_type == "refrain":
+            title = "Refrain" if not b_label else b_label
+        elif b_type == "bridge":
+            title = "Bridge" if not b_label else b_label
+        else:
+            title = b_label
+
+        insert_smart_chorus_slide(presentation, title, b_text, is_last)
+

@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "Praise to the Lord",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "verse",
+        "label": "1",
+        "text": "He is exalted the King is exalted on High\nI will praise You\nHe is exalted forever exalted\nAnd I will praise His name"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "He is the Lord\nForever His truth shall reign\nHeaven and Earth\nRejoice in His holy name\nHe is exalted the King is exalted on high"
+      },
+      {
+        "type": "verse",
+        "label": "2",
+        "text": "He is exalted, the King is on High\nI will praise Him\nHe is exalted, forever exalted\nAnd I will praise His name"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "He is the Lord\nForever His truth shall reign\nHeaven and Earth\nRejoice in His holy name\nHe is exalted the King is exalted on high\nHe is exalted the King is exalted on high"
+      }
+    ]
+  }
+]
