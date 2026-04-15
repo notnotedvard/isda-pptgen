@@ -3,6 +3,7 @@ import yaml
 import shutil
 import sys
 import json
+import contextlib
 from pathlib import Path
 import datetime
 
@@ -209,10 +210,42 @@ if config != new_config:
     msg.empty()
 
 
+class StreamToStreamlit:
+    def __init__(self, placeholder):
+        self.placeholder = placeholder
+        self.text = ""
+
+    def write(self, data):
+        if isinstance(data, str):
+            parts = data.split('\r')
+            for i, part in enumerate(parts):
+                if i > 0:
+                    # clear the current line
+                    last_newline = self.text.rfind('\n')
+                    if last_newline != -1:
+                        self.text = self.text[:last_newline + 1]
+                    else:
+                        self.text = ""
+                self.text += part
+            # Keep the last 5000 characters to prevent Streamlit UI lag
+            self.placeholder.code(self.text[-5000:], language="plaintext")
+
+    def flush(self):
+        pass
+
+    def isatty(self):
+        return False
+
 if generate:
+    st.markdown("### Generation Logs")
+    log_placeholder = st.empty()
+    out_stream = StreamToStreamlit(log_placeholder)
+
     with st.spinner("Building presentation..."):
-        try:
-            build_presentation(new_config)
-            st.success("Presentation generated successfully!", icon="✅")
-        except Exception as e:
-            st.error(f"Error generating presentation: {str(e)}")
+        with contextlib.redirect_stdout(out_stream), contextlib.redirect_stderr(out_stream):
+            try:
+                build_presentation(new_config)
+                st.success("Presentation generated successfully!", icon="✅")
+            except Exception as e:
+                st.error(f"Error generating presentation: {str(e)}")
+

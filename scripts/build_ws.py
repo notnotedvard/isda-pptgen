@@ -53,24 +53,58 @@ def load_yaml_config(path: Path) -> dict:
 
 
 def parse_optional_int(value):
+    """Parse a value that may be empty, an int, or an external hymn id like 'ext_1'.
+
+    Returns:
+        None for empty values, an int for numeric inputs, or the original
+        'ext_...' string for external hymn identifiers.
+    """
     if value is None or value == "":
         return None
+    if isinstance(value, str) and value.startswith("ext_"):
+        return value
     return int(value)
 
 
 def parse_int_list(value):
+    """Parse a value into a list of hymn identifiers.
+
+    The returned list may contain ints and/or external hymn id strings like
+    'ext_1'. Accepts None, int, comma-separated strings, or lists.
+    """
     if value is None:
         return []
+    def _convert_item(item):
+        if item is None:
+            return None
+        s = str(item).strip()
+        if s == "":
+            return None
+        if s.startswith("ext_"):
+            return s
+        return int(s)
+
     if isinstance(value, int):
         return [value]
     if isinstance(value, str):
         stripped = value.strip()
         if stripped == "":
             return []
-        return [int(part.strip()) for part in stripped.split(",") if part.strip()]
+        parts = [p.strip() for p in stripped.split(",")]
+        result = []
+        for p in parts:
+            if p == "":
+                continue
+            result.append(_convert_item(p))
+        return result
     if isinstance(value, list):
-        return [int(item) for item in value if item is not None and str(item).strip() != ""]
-    raise ValueError(f"Unable to convert {value!r} to a list of ints")
+        result = []
+        for item in value:
+            conv = _convert_item(item)
+            if conv is not None:
+                result.append(conv)
+        return result
+    raise ValueError(f"Unable to convert {value!r} to a list of ints or external ids")
 
 
 def get_bible_verses(reference, version="kjv"):
@@ -146,7 +180,14 @@ def build_presentation(config: dict):
         clear_program_media()
         if mission_spotlight_url != "":
             download_youtube_video(mission_spotlight_url, output_dir=media_dir, filename="mission-spotlight", download_subtitles=True)
-            burn_subtitles(f"{media_dir}/mission-spotlight.mp4", f"{media_dir}/mission-spotlight.en.srt", f"{media_dir}/mission-spotlight-subbed.mp4")
+            import glob
+            import shutil
+            srt_files = glob.glob(f"{media_dir}/mission-spotlight*.srt")
+            if srt_files:
+                burn_subtitles(f"{media_dir}/mission-spotlight.mp4", srt_files[0], f"{media_dir}/mission-spotlight-subbed.mp4")
+            else:
+                shutil.copy(f"{media_dir}/mission-spotlight.mp4", f"{media_dir}/mission-spotlight-subbed.mp4")
+
         if special_item_video_url != "":
             download_youtube_video(special_item_video_url, output_dir=media_dir, filename="special-item", download_subtitles=False)
         if meditation_video_url != "":
