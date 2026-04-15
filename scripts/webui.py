@@ -6,10 +6,12 @@ import json
 import contextlib
 from pathlib import Path
 import datetime
+import copy
 
 # Provide access to the scripts module if needed
 sys.path.append(str(Path(".").resolve()))
 from scripts.build_ws import build_presentation
+from scripts.fetch_schedule import fetch_data_for_date
 import time
 
 st.set_page_config(page_title="ISDA PPT Generator", layout="wide")
@@ -86,6 +88,12 @@ program_path = PROGRAMS_DIR / selected_program
 with open(program_path, "r", encoding="utf-8") as f:
     config = yaml.safe_load(f) or {}
 
+original_config = copy.deepcopy(config)
+
+if "field_sources" not in config:
+    config["field_sources"] = {}
+sources = config["field_sources"]
+
 default_date = config.get("date", today)
 if isinstance(default_date, str):
     try:
@@ -95,33 +103,139 @@ if isinstance(default_date, str):
 
 st.subheader(f"Service Date: {default_date.strftime('%B %d, %Y')}")
 
+def fetch_for_date(d: datetime.date):
+    for fmt in ["%d/%m/%Y", "%d/%m", "%m/%d/%Y", "%m/%d"]:
+        data = fetch_data_for_date(d.strftime(fmt))
+        if data: return data
+    return None
+
+def apply_fetched_data(data, keys=None):
+    if not data:
+        st.error("❌ No data found for this date in the Google Sheet. Make sure the date exists.")
+        st.toast("No data found for this date in Google Sheet.", icon="❌")
+        return False
+        
+    sv = data['service_details']
+    so = data['song_details']
+    
+    def set_val(key, sheet_val, default_val):
+        if keys and key not in keys: return
+        final_val = sheet_val if str(sheet_val).strip() else default_val
+        config[key] = final_val
+        sources[key] = "sheet"
+        # Update session_state safely because this function is now called BEFORE the widgets are instantiated
+        st.session_state[key] = final_val
+        
+    def safe_hymn(v):
+        if not str(v).strip(): return 0
+        try: return int(str(v).strip())
+        except: 
+            v = str(v).strip()
+            return v if v in all_hymn_nums else 0
+            
+    def safe_hymn_list(v1, v2):
+        res = []
+        for v in [v1, v2]:
+            val = str(v).strip()
+            if not val: continue
+            try: res.append(int(val))
+            except: res.append(val)
+        return res
+
+    set_val("preacher", sv.get("Preacher", ""), config.get("preacher", ""))
+    set_val("sermon_title", sv.get("Sermon title", ""), config.get("sermon_title", ""))
+    set_val("scripture_reading_reference", sv.get("Scripture reading reference", ""), config.get("scripture_reading_reference", ""))
+    set_val("call_to_worship_scripture_reference", sv.get("Call to worship", ""), config.get("call_to_worship_scripture_reference", ""))
+    set_val("unallocated_offerings", sv.get("Offerings", ""), config.get("unallocated_offerings", "Combined Budget"))
+    
+    set_val("opening_song_hymn", safe_hymn(so.get("Opening song", "")), config.get("opening_song_hymn", 0))
+    set_val("closing_song_hymn", safe_hymn(so.get("Closing song", "")), config.get("closing_song_hymn", 0))
+    
+    h_list = safe_hymn_list(so.get("Song service song 1", ""), so.get("Song service song 2", ""))
+    set_val("song_service_hymns", h_list, config.get("song_service_hymns", []))
+    
+    with open(program_path, "w", encoding="utf-8") as f:
+        yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+        
+    st.toast("Values updated from sheet!", icon="✅")
+    return True
+
+col_top1, col_top2 = st.columns([1, 1])
+with col_top1:
+    date_val = st.date_input("System Date", value=default_date, format="DD/MM/YYYY")
+
+# Catch global fetch action immediately after date_val is instantiated
+if st.session_state.get("fetch_all_btn"):
+    data = fetch_for_date(date_val)
+    apply_fetched_data(data)
+
+def render_input(config_key, label, render_func, **kwargs):
+    c1, c2 = st.columns([10, 1])
+    
+    # Catch per-field fetch action before widget is instantiated
+    if st.session_state.get(f"fetch_btn_{config_key}"):
+        data = fetch_for_date(date_val)
+        apply_fetched_data(data, keys=[config_key])
+        
+    cur = config.get(config_key, kwargs.get("default"))
+    if cur is None:
+        cur = [] if render_func == st.multiselect else (0 if render_func == st.selectbox else "")
+
+    # Check ahead in session_state so the UI label updates immediately on interaction
+    if config_key in st.session_state:
+        ss_val = st.session_state[config_key]
+        if ss_val != cur and not st.session_state.get(f"fetch_btn_{config_key}") and not st.session_state.get("fetch_all_btn"):
+            sources[config_key] = "manual"
+
+    source = sources.get(config_key, "manual")
+    ind = "Sourced from Google Sheet" if source == "sheet" else "Manual entry"
+    full_label = f"{label} ({ind})"
+
+    with c1:
+        if render_func == st.text_input:
+            new_val = st.text_input(full_label, value=cur, key=config_key)
+        elif render_func == st.selectbox:
+            opts = kwargs["options"]
+            idx = opts.index(cur) if cur in opts else 0
+            new_val = st.selectbox(full_label, options=opts, index=idx, format_func=kwargs.get("format_func"), key=config_key)
+        elif render_func == st.multiselect:
+            opts = kwargs["options"]
+            new_val = st.multiselect(full_label, options=opts, default=[x for x in cur if x in opts], format_func=kwargs.get("format_func"), key=config_key)
+        else:
+            new_val = cur
+
+        if new_val != cur:
+            if render_func == st.selectbox and new_val == 0 and config.get(config_key) is None:
+                pass
+            else:
+                sources[config_key] = "manual"
+                config[config_key] = new_val
+                
+    with c2:
+        st.write("")
+        st.write("")
+        # We just render the button. We don't perform the logic here since we process the event at top of render_input.
+        st.button("↺", key=f"fetch_btn_{config_key}", help=f"Fetch {label} from sheet")
+                
+    return new_val
+
+with col_top2:
+    st.write("")
+    st.write("")
+    # Again, capture button clicks upstream.
+    st.button("Fetch all info from the Google Sheet", key="fetch_all_btn")
+
+
+st.markdown("---")
+
 col1, col2 = st.columns(2)
 
 with col1:
-    date_val = st.date_input("System Date", value=default_date)
     mission_spotlight_url = st.text_input("Mission Spotlight URL", value=config.get("mission_spotlight_url", ""))
     
-    current_hymns = config.get("song_service_hymns", [])
-    if not isinstance(current_hymns, list):
-        current_hymns = []
-    
-    song_service_hymns = st.multiselect(
-        "Song Service Hymns", 
-        options=all_hymn_nums,
-        default=[h for h in current_hymns if h in all_hymn_nums],
-        format_func=format_hymn
-    )
-    
-    call_to_worship_scripture_reference = st.text_input("Call to Worship Scripture Reference", value=config.get("call_to_worship_scripture_reference", ""))
-    
-    op_song = config.get("opening_song_hymn", 0)
-    if op_song is None: op_song = 0
-    opening_song_hymn = st.selectbox(
-        "Opening Song", 
-        options=hymn_options_with_none,
-        index=hymn_options_with_none.index(op_song) if op_song in hymn_options_with_none else 0,
-        format_func=format_hymn
-    )
+    song_service_hymns = render_input("song_service_hymns", "Song Service Hymns", st.multiselect, options=all_hymn_nums, default=[], format_func=format_hymn)
+    call_to_worship_scripture_reference = render_input("call_to_worship_scripture_reference", "Call to Worship Scripture Reference", st.text_input, default="")
+    opening_song_hymn = render_input("opening_song_hymn", "Opening Song", st.selectbox, options=hymn_options_with_none, default=0, format_func=format_hymn)
     
     st.markdown("---")
     current_childrens = config.get("childrens_story_ppt", "")
@@ -131,9 +245,9 @@ with col1:
     special_item_video_url = st.text_input("Special Item Video URL", value=config.get("special_item_video_url", ""))
 
 with col2:
-    scripture_reading_reference = st.text_input("Scripture Reading Reference", value=config.get("scripture_reading_reference", ""))
-    sermon_title = st.text_input("Sermon Title", value=config.get("sermon_title", ""))
-    preacher = st.text_input("Preacher", value=config.get("preacher", ""))
+    scripture_reading_reference = render_input("scripture_reading_reference", "Scripture Reading Reference", st.text_input, default="")
+    sermon_title = render_input("sermon_title", "Sermon Title", st.text_input, default="")
+    preacher = render_input("preacher", "Preacher", st.text_input, default="")
     
     st.markdown("---")
     current_sermon = config.get("sermon_slides", "")
@@ -142,17 +256,10 @@ with col2:
     
     meditation_video_url = st.text_input("Meditation Video URL", value=config.get("meditation_video_url", ""))
     
-    cl_song = config.get("closing_song_hymn", 0)
-    if cl_song is None: cl_song = 0
-    closing_song_hymn = st.selectbox(
-        "Closing Song", 
-        options=hymn_options_with_none,
-        index=hymn_options_with_none.index(cl_song) if cl_song in hymn_options_with_none else 0,
-        format_func=format_hymn
-    )
+    closing_song_hymn = render_input("closing_song_hymn", "Closing Song", st.selectbox, options=hymn_options_with_none, default=0, format_func=format_hymn)
     
     thermometers_slides = st.text_input("Offering Thermometers Slides Path", value=config.get("thermometers_slides", "media/offerings.pptx"))
-    unallocated_offerings = st.text_input("Unallocated Offerings Line Item", value=config.get("unallocated_offerings", "Combined Budget"))
+    unallocated_offerings = render_input("unallocated_offerings", "Unallocated Offerings Line Item", st.text_input, default="Combined Budget")
 
 st.markdown("---")
 col_b, col_dl = st.columns([1, 4])
@@ -196,11 +303,12 @@ new_config = {
     "download_media": download_media,
     "thermometers_slides": thermometers_slides,
     "unallocated_offerings": unallocated_offerings,
-    "membership_transfers": config.get("membership_transfers", [])
+    "membership_transfers": config.get("membership_transfers", []),
+    "field_sources": sources
 }
 
 # Auto-save mechanism
-if config != new_config:
+if original_config != new_config:
     with open(program_path, "w", encoding="utf-8") as f:
         yaml.dump(new_config, f, default_flow_style=False, sort_keys=False)
     # Streamlit reruns on state change, so it auto-renders the rest
