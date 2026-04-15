@@ -130,17 +130,27 @@ def build_presentation(config: dict):
 
     filename = get_filename(date)
     presentation = Presentation("assets/template.pptx")
+    media_dir = f"media/{date}"
+    os.makedirs(media_dir, exist_ok=True)
+    os.makedirs("media/global_announcements", exist_ok=True)
+
+    def clear_program_media():
+        import glob
+        for ext in ["*.png", "*.srt", "*.mp4"]:
+            for file in glob.glob(os.path.join(media_dir, ext)):
+                os.remove(file)
 
     # Downloading and preparing media
-    if input("Download media? (y/N) ").lower() == "y":
-        clear_media_folder()
+    download_media = config.get("download_media", False)
+    if download_media:
+        clear_program_media()
         if mission_spotlight_url != "":
-            download_youtube_video(mission_spotlight_url, output_dir="media", filename="mission-spotlight", download_subtitles=True)
-            burn_subtitles("media/mission-spotlight.mp4", "media/mission-spotlight.en.srt", "media/mission-spotlight-subbed.mp4")
+            download_youtube_video(mission_spotlight_url, output_dir=media_dir, filename="mission-spotlight", download_subtitles=True)
+            burn_subtitles(f"{media_dir}/mission-spotlight.mp4", f"{media_dir}/mission-spotlight.en.srt", f"{media_dir}/mission-spotlight-subbed.mp4")
         if special_item_video_url != "":
-            download_youtube_video(special_item_video_url, output_dir="media", filename="special-item", download_subtitles=False)
+            download_youtube_video(special_item_video_url, output_dir=media_dir, filename="special-item", download_subtitles=False)
         if meditation_video_url != "":
-            download_youtube_video(meditation_video_url, output_dir="media", filename="meditation", download_subtitles=False)
+            download_youtube_video(meditation_video_url, output_dir=media_dir, filename="meditation", download_subtitles=False)
 
     # fetch scripture
     print("Fetching scripture...")
@@ -153,7 +163,7 @@ def build_presentation(config: dict):
     insert_title_with_logo_slide(presentation, "Sabbath School Offering & Mission Spotlight")
 
     # mission spotlight
-    insert_video_slide(presentation, "media/mission-spotlight-subbed.mp4", "media/mission-spotlight.png", "Mission Spotlight")
+    insert_video_slide(presentation, f"{media_dir}/mission-spotlight-subbed.mp4", f"{media_dir}/mission-spotlight.png", "Mission Spotlight")
 
     # song service
     insert_title_with_logo_slide(presentation, "Song Service")
@@ -163,11 +173,14 @@ def build_presentation(config: dict):
     # announcements
     insert_welcome_and_announcements_slide(presentation)
     # insert_title_with_logo_slide(presentation, "Welcome and Announcements") # does not include animation
-    announcement_dir = "media/announcements"
-    if os.path.exists(announcement_dir):
-        images = tuple(sorted([os.path.join(announcement_dir, f) for f in os.listdir(announcement_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]))
-        insert_images(presentation, images)
-    # merge_pptx(presentation, "media/announcements/announcements.pptx")
+    
+    # Process both global announcements and program-specific announcements
+    for ann_dir in ["media/global_announcements", f"{media_dir}/announcements"]:
+        if os.path.exists(ann_dir):
+            images = tuple(sorted([os.path.join(ann_dir, f) for f in os.listdir(ann_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]))
+            if images:
+                insert_images(presentation, images)
+    # merge_pptx(presentation, f"{media_dir}/announcements/announcements.pptx")
 
     # membership transfers
     if membership_transfers:
@@ -205,7 +218,7 @@ def build_presentation(config: dict):
     # special music
     insert_title_with_logo_slide(presentation, "Special Music")
     if special_item_video_url != "":
-        insert_video_slide(presentation, "media/special-item.mp4", "media/special-item.png")
+        insert_video_slide(presentation, f"{media_dir}/special-item.mp4", f"{media_dir}/special-item.png")
 
     # scripture reading
     insert_title_with_logo_slide(presentation, "Scripture Reading")
@@ -219,7 +232,7 @@ def build_presentation(config: dict):
 
     insert_title_with_logo_slide(presentation, "Meditation")
     if meditation_video_url != "":
-        insert_video_slide(presentation, "media/meditation.mp4", "media/meditation.png")
+        insert_video_slide(presentation, f"{media_dir}/meditation.mp4", f"{media_dir}/meditation.png")
 
     # closing song
     insert_title_with_logo_slide(presentation, "Closing Song")

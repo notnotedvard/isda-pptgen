@@ -54,5 +54,6 @@ cache/
 # Local workspace specific
 example-files/
 hymns/
+configs/
 output.pptx
 *.sqlite

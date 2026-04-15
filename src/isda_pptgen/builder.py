@@ -440,19 +440,35 @@ def insert_end_slide(presentation:Presentation):
     """Inserts the end slide."""
     duplicate_slide(presentation, TEMPLATE.index("end_slide"))
 
-def insert_hymn(presentation:Presentation, number:int):
-    """Inserts slides for a hymn from the JSON database."""
+def insert_hymn(presentation:Presentation, number):
+    """Inserts slides for a hymn from the JSON database or external songs."""
     import json
     
     with open("assets/hymns.json", "r", encoding="utf-8") as f:
         hymns_data = json.load(f)
         
-    # Find the requested hymn
+    try:
+        with open("assets/external_songs.json", "r", encoding="utf-8") as f:
+            external_data = json.load(f)
+    except FileNotFoundError:
+        external_data = []
+        
+    # Combine them. External songs use strings like 'ext_1', or if number starts with 'ext_', we look there.
     target_hymn = None
-    for hymn in hymns_data:
-        if hymn["id"] == number:
-            target_hymn = hymn
-            break
+    
+    if isinstance(number, str) and number.startswith("ext_"):
+        ext_id = int(number.replace("ext_", ""))
+        for hymn in external_data:
+            if hymn["id"] == ext_id:
+                target_hymn = hymn
+                break
+    else:
+        # Standard hymns.json lookup
+        num_int = int(number)
+        for hymn in hymns_data:
+            if hymn["id"] == num_int:
+                target_hymn = hymn
+                break
             
     if not target_hymn:
         print(f"Hymn {number} not found!")
