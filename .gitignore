@@ -15,6 +15,7 @@ gyp-thumbnail.png
 example-files/*
 scripts/build_ws.yml
 .env
+*.bak
 .venv
 env/
 venv/

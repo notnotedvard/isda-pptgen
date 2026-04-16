@@ -99,7 +99,9 @@ def fetch_data_for_date(date_str: str) -> Optional[Dict]:
         print("Error: 'credentials.json' not found. Please follow the setup instructions to create a Google Service Account.")
         return None
     except Exception as e:
-        print(f"Error fetching data: {e}")
+        import traceback
+        traceback.print_exc()
+        print(f"Error fetching data: {repr(e)}")
         return None
 
 if __name__ == "__main__":
