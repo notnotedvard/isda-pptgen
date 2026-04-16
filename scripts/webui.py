@@ -10,7 +10,7 @@ import copy
 
 # Provide access to the scripts module if needed
 sys.path.append(str(Path(".").resolve()))
-from scripts.build_ws import build_presentation
+from scripts.build_ws import build_presentation, get_filename
 from scripts.fetch_schedule import fetch_data_for_date
 import time
 
@@ -169,6 +169,36 @@ if st.session_state.get("fetch_all_btn"):
     data = fetch_for_date(date_val)
     apply_fetched_data(data)
 
+if st.session_state.get("clear_all_btn"):
+    keys_to_clear = [
+        "preacher", "sermon_title", "scripture_reading_reference", 
+        "call_to_worship_scripture_reference", "unallocated_offerings",
+        "opening_song_hymn", "closing_song_hymn", "song_service_hymns",
+        "mission_spotlight_url", "special_item_video_url", "meditation_video_url",
+        "childrens_story_ppt", "sermon_slides", "thermometers_slides"
+    ]
+    for param in keys_to_clear:
+        if param in ["opening_song_hymn", "closing_song_hymn"]:
+            config[param] = 0
+            sources[param] = "manual"
+        elif param in ["song_service_hymns"]:
+            config[param] = []
+            sources[param] = "manual"
+        elif param == "thermometers_slides":
+            config[param] = "media/offerings.pptx"
+            sources[param] = "manual"
+        else:
+            config[param] = ""
+            sources[param] = "manual"
+        
+        if param in st.session_state:
+            del st.session_state[param]
+    
+    with open(program_path, "w", encoding="utf-8") as f:
+        yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+    st.toast("All fields cleared!", icon="🧹")
+    st.rerun()
+
 def render_input(config_key, label, render_func, **kwargs):
     c1, c2 = st.columns([10, 1])
     
@@ -192,15 +222,25 @@ def render_input(config_key, label, render_func, **kwargs):
     full_label = f"{label} ({ind})"
 
     with c1:
+        widget_kwargs = {"key": config_key}
+        if config_key not in st.session_state:
+            if render_func == st.text_input:
+                widget_kwargs["value"] = cur
+            elif render_func == st.selectbox:
+                opts = kwargs["options"]
+                widget_kwargs["index"] = opts.index(cur) if cur in opts else 0
+            elif render_func == st.multiselect:
+                opts = kwargs["options"]
+                widget_kwargs["default"] = [x for x in cur if x in opts]
+
         if render_func == st.text_input:
-            new_val = st.text_input(full_label, value=cur, key=config_key)
+            new_val = st.text_input(full_label, **widget_kwargs)
         elif render_func == st.selectbox:
             opts = kwargs["options"]
-            idx = opts.index(cur) if cur in opts else 0
-            new_val = st.selectbox(full_label, options=opts, index=idx, format_func=kwargs.get("format_func"), key=config_key)
+            new_val = st.selectbox(full_label, options=opts, format_func=kwargs.get("format_func"), **widget_kwargs)
         elif render_func == st.multiselect:
             opts = kwargs["options"]
-            new_val = st.multiselect(full_label, options=opts, default=[x for x in cur if x in opts], format_func=kwargs.get("format_func"), key=config_key)
+            new_val = st.multiselect(full_label, options=opts, format_func=kwargs.get("format_func"), **widget_kwargs)
         else:
             new_val = cur
 
@@ -212,18 +252,20 @@ def render_input(config_key, label, render_func, **kwargs):
                 config[config_key] = new_val
                 
     with c2:
-        st.write("")
-        st.write("")
+        st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
         # We just render the button. We don't perform the logic here since we process the event at top of render_input.
         st.button("↺", key=f"fetch_btn_{config_key}", help=f"Fetch {label} from sheet")
                 
     return new_val
 
 with col_top2:
-    st.write("")
-    st.write("")
+    st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
     # Again, capture button clicks upstream.
-    st.button("Fetch all info from the Google Sheet", key="fetch_all_btn")
+    cb1, cb2 = st.columns([1, 1])
+    with cb1:
+        st.button("Fetch all from Google Sheet", key="fetch_all_btn")
+    with cb2:
+        st.button("🗑️ Clear All", key="clear_all_btn")
 
 
 st.markdown("---")
@@ -232,14 +274,23 @@ col1, col2 = st.columns(2)
 
 with col1:
     mission_spotlight_url = st.text_input("Mission Spotlight URL", value=config.get("mission_spotlight_url", ""))
-    
+
     song_service_hymns = render_input("song_service_hymns", "Song Service Hymns", st.multiselect, options=all_hymn_nums, default=[], format_func=format_hymn)
     call_to_worship_scripture_reference = render_input("call_to_worship_scripture_reference", "Call to Worship Scripture Reference", st.text_input, default="")
     opening_song_hymn = render_input("opening_song_hymn", "Opening Song", st.selectbox, options=hymn_options_with_none, default=0, format_func=format_hymn)
     
     st.markdown("---")
     current_childrens = config.get("childrens_story_ppt", "")
-    st.write(f"**Current Children's Story:** `{current_childrens or 'None'}`")
+    cc1, cc2 = st.columns([4, 1])
+    with cc1:
+        st.write(f"**Current Children's Story:** `{current_childrens or 'None'}`")
+    with cc2:
+        if current_childrens and st.button("🗑️ Clear", key="clear_child"):
+            config["childrens_story_ppt"] = ""
+            current_childrens = ""
+            with open(program_path, "w", encoding="utf-8") as f:
+                yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+            st.rerun()
     childrens_story_file = st.file_uploader("Upload PPT", type=["pptx", "ppt"], key="childrens_upload")
 
     special_item_video_url = st.text_input("Special Item Video URL", value=config.get("special_item_video_url", ""))
@@ -251,14 +302,38 @@ with col2:
     
     st.markdown("---")
     current_sermon = config.get("sermon_slides", "")
-    st.write(f"**Current Sermon Slides:** `{current_sermon or 'None'}`")
+    sc1, sc2 = st.columns([4, 1])
+    with sc1:
+        st.write(f"**Current Sermon Slides:** `{current_sermon or 'None'}`")
+    with sc2:
+        if current_sermon and st.button("🗑️ Clear", key="clear_sermon"):
+            config["sermon_slides"] = ""
+            current_sermon = ""
+            with open(program_path, "w", encoding="utf-8") as f:
+                yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+            st.rerun()
     sermon_slides_file = st.file_uploader("Upload PPT", type=["pptx", "ppt"], key="sermon_upload")
     
     meditation_video_url = st.text_input("Meditation Video URL", value=config.get("meditation_video_url", ""))
     
     closing_song_hymn = render_input("closing_song_hymn", "Closing Song", st.selectbox, options=hymn_options_with_none, default=0, format_func=format_hymn)
     
-    thermometers_slides = st.text_input("Offering Thermometers Slides Path", value=config.get("thermometers_slides", "media/offerings.pptx"))
+    st.markdown("---")
+    current_thermometers = config.get("thermometers_slides", "media/offerings.pptx")
+    tc1, tc2 = st.columns([4, 1])
+    with tc1:
+        st.write(f"**Current Offering Thermometers:** `{current_thermometers}`")
+    with tc2:
+        # Default to media/offerings.pptx if none or cleared
+        if current_thermometers and current_thermometers != "media/offerings.pptx" and st.button("🗑️ Clear", key="clear_thermometers"):
+            config["thermometers_slides"] = "media/offerings.pptx"
+            current_thermometers = "media/offerings.pptx"
+            with open(program_path, "w", encoding="utf-8") as f:
+                yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+            st.rerun()
+    thermometers_slides_file = st.file_uploader("Upload Offering Thermometers PPT", type=["pptx", "ppt"], key="thermometers_upload")
+    
+    st.markdown("---")
     unallocated_offerings = render_input("unallocated_offerings", "Unallocated Offerings Line Item", st.text_input, default="Combined Budget")
 
 st.markdown("---")
@@ -286,6 +361,9 @@ final_childrens_story_ppt = new_childrens_path if new_childrens_path else curren
 new_sermon_path = save_uploaded_file(sermon_slides_file, date_str)
 final_sermon_slides = new_sermon_path if new_sermon_path else current_sermon
 
+new_thermometers_path = save_uploaded_file(thermometers_slides_file, date_str)
+final_thermometers_slides = new_thermometers_path if new_thermometers_path else current_thermometers
+
 new_config = {
     "date": date_val,
     "mission_spotlight_url": mission_spotlight_url,
@@ -301,7 +379,7 @@ new_config = {
     "meditation_video_url": meditation_video_url,
     "closing_song_hymn": closing_song_hymn if closing_song_hymn not in [0, "0"] else None,
     "download_media": download_media,
-    "thermometers_slides": thermometers_slides,
+    "thermometers_slides": final_thermometers_slides,
     "unallocated_offerings": unallocated_offerings,
     "membership_transfers": config.get("membership_transfers", []),
     "field_sources": sources
@@ -356,4 +434,18 @@ if generate:
                 st.success("Presentation generated successfully!", icon="✅")
             except Exception as e:
                 st.error(f"Error generating presentation: {str(e)}")
+
+st.markdown("---")
+# Look for the generated output file to offer a download button
+out_name = f"{get_filename(date_val)}.pptx"
+out_file = Path("output") / out_name
+if out_file.exists():
+    with open(out_file, "rb") as f:
+        st.download_button(
+            label="📥 Download Generated Presentation",
+            data=f,
+            file_name=out_file.name,
+            mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            type="primary"
+        )
 
