@@ -116,7 +116,6 @@ def apply_fetched_data(data, keys=None):
         return False
         
     sv = data['service_details']
-    so = data['song_details']
     
     def set_val(key, sheet_val, default_val):
         if keys and key not in keys: return
@@ -144,14 +143,14 @@ def apply_fetched_data(data, keys=None):
 
     set_val("preacher", sv.get("Preacher", ""), config.get("preacher", ""))
     set_val("sermon_title", sv.get("Sermon title", ""), config.get("sermon_title", ""))
-    set_val("scripture_reading_reference", sv.get("Scripture reading reference", ""), config.get("scripture_reading_reference", ""))
+    set_val("scripture_reading_reference", sv.get("Bible verse", ""), config.get("scripture_reading_reference", ""))
     set_val("call_to_worship_scripture_reference", sv.get("Call to worship", ""), config.get("call_to_worship_scripture_reference", ""))
     set_val("unallocated_offerings", sv.get("Offerings", ""), config.get("unallocated_offerings", "Combined Budget"))
     
-    set_val("opening_song_hymn", safe_hymn(so.get("Opening song", "")), config.get("opening_song_hymn", 0))
-    set_val("closing_song_hymn", safe_hymn(so.get("Closing song", "")), config.get("closing_song_hymn", 0))
+    set_val("opening_song_hymn", safe_hymn(sv.get("Opening song", "")), config.get("opening_song_hymn", 0))
+    set_val("closing_song_hymn", safe_hymn(sv.get("Closing song", "")), config.get("closing_song_hymn", 0))
     
-    h_list = safe_hymn_list(so.get("Song service song 1", ""), so.get("Song service song 2", ""))
+    h_list = safe_hymn_list(sv.get("Song service song 1", ""), sv.get("Song service song 2", ""))
     set_val("song_service_hymns", h_list, config.get("song_service_hymns", []))
     
     with open(program_path, "w", encoding="utf-8") as f:
