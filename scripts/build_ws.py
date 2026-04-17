@@ -16,6 +16,7 @@ from isda_pptgen.builder import (
     delete_template_slides,
     insert_end_slide,
     insert_hymn,
+    insert_external_song_by_id,
     insert_images,
     insert_scripture_slide,
     insert_welcome_and_announcements_slide,
@@ -174,6 +175,12 @@ def build_presentation(config: dict):
             for file in glob.glob(os.path.join(media_dir, ext)):
                 os.remove(file)
 
+    def insert_song(pres: Presentation, song_ref):
+        if isinstance(song_ref, str) and song_ref.startswith("ext_"):
+            insert_external_song_by_id(pres, int(song_ref.replace("ext_", "")))
+        else:
+            insert_hymn(pres, song_ref)
+
     # Downloading and preparing media
     download_media = config.get("download_media", False)
     if download_media:
@@ -209,7 +216,7 @@ def build_presentation(config: dict):
     # song service
     insert_title_with_logo_slide(presentation, "Song Service")
     for hymn_number in song_service_hymns:
-        insert_hymn(presentation, hymn_number)
+        insert_song(presentation, hymn_number)
 
     # announcements
     insert_welcome_and_announcements_slide(presentation)
@@ -240,7 +247,7 @@ def build_presentation(config: dict):
     insert_scripture_slide(presentation, call_to_worship_scripture_reference, call_to_worship_scripture)
     insert_title_with_logo_slide(presentation, "Opening Song")
     if opening_song_hymn is not None:
-        insert_hymn(presentation, opening_song_hymn)
+        insert_song(presentation, opening_song_hymn)
 
     # intercessory prayer
     insert_title_with_logo_slide(presentation, "Intercessory Prayer")
@@ -278,7 +285,7 @@ def build_presentation(config: dict):
     # closing song
     insert_title_with_logo_slide(presentation, "Closing Song")
     if closing_song_hymn is not None:
-        insert_hymn(presentation, closing_song_hymn)
+        insert_song(presentation, closing_song_hymn)
 
     # closing
     insert_title_with_logo_slide(presentation, "Closing Prayer")

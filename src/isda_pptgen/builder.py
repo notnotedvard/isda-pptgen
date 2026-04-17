@@ -333,7 +333,7 @@ def insert_chorus_slide(presentation:Presentation, verse_name:str, text:str, las
         # remove outline
         square.line.fill.background()
 
-def insert_smart_chorus_slide(presentation:Presentation, verse_name:str, text:str, last_slide:bool=False):
+def insert_chorus_slide_and_split_if_too_long(presentation:Presentation, verse_name:str, text:str, last_slide:bool=False):
     """Same as insert_chorus_slide but will split the text into multiple slides if it's too long."""
     MAX_LINES = 8
     lines = text.split("\n")
@@ -496,7 +496,7 @@ def insert_hymn(presentation:Presentation, number):
         else:
             title = b_label
 
-        insert_smart_chorus_slide(presentation, title, b_text, is_last)
+        insert_chorus_slide_and_split_if_too_long(presentation, title, b_text, is_last)
 
 def insert_external_song_by_name(presentation:Presentation, song_name:str):
     """Inserts lyric slides for a song that is in the external songs JSON database."""
@@ -539,7 +539,7 @@ def insert_external_song_by_name(presentation:Presentation, song_name:str):
         else:
             title = b_label
 
-        insert_smart_chorus_slide(presentation, title, b_text, is_last)
+        insert_chorus_slide_and_split_if_too_long(presentation, title, b_text, is_last)
 
 def insert_external_song_by_id(presentation:Presentation, song_id:int):
     """Inserts lyric slides for a song that is in the external songs JSON database by ID."""
@@ -581,5 +581,5 @@ def insert_external_song_by_id(presentation:Presentation, song_id:int):
         else:
             title = b_label
 
-        insert_smart_chorus_slide(presentation, title, b_text, is_last)
+        insert_chorus_slide_and_split_if_too_long(presentation, title, b_text, is_last)
 
