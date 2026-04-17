@@ -4,6 +4,7 @@ import shutil
 import sys
 import json
 import contextlib
+import difflib
 from pathlib import Path
 import datetime
 import copy
@@ -125,20 +126,39 @@ def apply_fetched_data(data, keys=None):
         # Update session_state safely because this function is now called BEFORE the widgets are instantiated
         st.session_state[key] = final_val
         
-    def safe_hymn(v):
-        if not str(v).strip(): return 0
-        try: return int(str(v).strip())
-        except: 
-            v = str(v).strip()
-            return v if v in all_hymn_nums else 0
+    def safe_hymn(v, context_name="Song"):
+        val = str(v).strip()
+        if not val:
+            return 0
+        
+        try:
+            h_num = int(val)
+            if h_num in all_hymn_nums:
+                return h_num
+        except Exception:
+            pass
+            
+        if val in all_hymn_nums:
+            return val
+            
+        song_names = list(hymn_dict.values())
+        matches = difflib.get_close_matches(val, song_names, n=1, cutoff=0.6)
+        if matches:
+            matched_name = matches[0]
+            for k, name in hymn_dict.items():
+                if name == matched_name:
+                    st.toast(f"{context_name}: Matched '{val}' to '{matched_name}'", icon="ℹ️")
+                    return k
+                    
+        st.toast(f"{context_name} '{val}' not found. Please review.", icon="⚠️")
+        return 0
             
     def safe_hymn_list(v1, v2):
         res = []
-        for v in [v1, v2]:
-            val = str(v).strip()
-            if not val: continue
-            try: res.append(int(val))
-            except: res.append(val)
+        for i, v in enumerate([v1, v2]):
+            h = safe_hymn(v, context_name=f"Song Service {i+1}")
+            if h != 0:
+                res.append(h)
         return res
 
     set_val("preacher", sv.get("Preacher", ""), config.get("preacher", ""))
@@ -147,8 +167,8 @@ def apply_fetched_data(data, keys=None):
     set_val("call_to_worship_scripture_reference", sv.get("Call to worship", ""), config.get("call_to_worship_scripture_reference", ""))
     set_val("unallocated_offerings", sv.get("Offerings", ""), config.get("unallocated_offerings", "Combined Budget"))
     
-    set_val("opening_song_hymn", safe_hymn(sv.get("Opening song", "")), config.get("opening_song_hymn", 0))
-    set_val("closing_song_hymn", safe_hymn(sv.get("Closing song", "")), config.get("closing_song_hymn", 0))
+    set_val("opening_song_hymn", safe_hymn(sv.get("Opening song", ""), "Opening Song"), config.get("opening_song_hymn", 0))
+    set_val("closing_song_hymn", safe_hymn(sv.get("Closing song", ""), "Closing Song"), config.get("closing_song_hymn", 0))
     
     h_list = safe_hymn_list(sv.get("Song service song 1", ""), sv.get("Song service song 2", ""))
     set_val("song_service_hymns", h_list, config.get("song_service_hymns", []))
