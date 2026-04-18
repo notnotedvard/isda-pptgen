@@ -26,5 +26,68 @@
         "text": "He is the Lord\nForever His truth shall reign\nHeaven and Earth\nRejoice in His holy name\nHe is exalted the King is exalted on high\nHe is exalted the King is exalted on high"
       }
     ]
+  },
+  {
+    "id": 2,
+    "name": "Holy Forever",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "verse",
+        "label": "1",
+        "text": "A thousand generations falling down in worship\nTo sing the song of ages to the Lamb\nAnd all who've gone before us and all who will believe\nWill sing the song of ages to the Lamb"
+      },
+      {
+        "type": "refrain",
+        "label": "Pre-Chorus",
+        "text": "Your name is the highest\nYour name is the greatest\nYour name stands above them all"
+      },
+      {
+        "type": "verse",
+        "label": "Pre-Chorus",
+        "text": "All thrones and dominions\nAll powers and positions\nYour name stands above them all"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "And the angels cry holy\nAll creation cries holy\nYou are lifted high, holy\nHoly forever"
+      },
+      {
+        "type": "verse",
+        "label": "2",
+        "text": "If you’ve been forgiven and if you’ve been redeemed\nSing the song forever to the Lamb\nIf you walk in freedom and if you bear His name\nSing the song forever to the Lamb\nWe’ll sing the song forever and amen"
+      },
+      {
+        "type": "verse",
+        "label": "Chorus",
+        "text": "And the angels cry holy\nAll creation cries holy\nYou are lifted high, holy\nHoly forever"
+      },
+      {
+        "type": "verse",
+        "label": "Chorus",
+        "text": "Hear Your people sing holy\nTo the King of kings, holy\nYou will always be holy\nHoly forever"
+      },
+      {
+        "type": "verse",
+        "label": "Bridge",
+        "text": "Your name is the highest\nYour name is the greatest\nYour name stand above them all"
+      },
+      {
+        "type": "verse",
+        "label": "Bridge",
+        "text": "All thrones and dominions\nAll powers and positions\nYour name stands above them all"
+      },
+      {
+        "type": "verse",
+        "label": "Chorus",
+        "text": "And the angels cry holy\nAll creation cries holy\nYou are lifted high, holy\nHoly forever…"
+      },
+      {
+        "type": "verse",
+        "label": "Bridge",
+        "text": "Your name is the highest\nYour name is the greatest\nYour name stands above them all"
+      }
+    ]
   }
 ]

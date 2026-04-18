@@ -204,7 +204,7 @@ if st.session_state.get("clear_all_btn"):
             config[param] = []
             sources[param] = "manual"
         elif param == "thermometers_slides":
-            config[param] = "media/offerings.pptx"
+            config[param] = ""
             sources[param] = "manual"
         else:
             config[param] = ""
@@ -341,12 +341,11 @@ with col2:
     current_thermometers = config.get("thermometers_slides", "media/offerings.pptx")
     tc1, tc2 = st.columns([4, 1])
     with tc1:
-        st.write(f"**Current Offering Thermometers:** `{current_thermometers}`")
+        st.write(f"**Current Offering Thermometers:** `{current_thermometers or 'None'}`")
     with tc2:
-        # Default to media/offerings.pptx if none or cleared
-        if current_thermometers and current_thermometers != "media/offerings.pptx" and st.button("🗑️ Clear", key="clear_thermometers"):
-            config["thermometers_slides"] = "media/offerings.pptx"
-            current_thermometers = "media/offerings.pptx"
+        if current_thermometers and st.button("🗑️ Clear", key="clear_thermometers"):
+            config["thermometers_slides"] = ""
+            current_thermometers = ""
             with open(program_path, "w", encoding="utf-8") as f:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
             st.rerun()
