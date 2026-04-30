@@ -219,16 +219,16 @@ def build_presentation(config: dict):
         insert_song(presentation, hymn_number)
 
     # announcements
-    insert_welcome_and_announcements_slide(presentation)
+    # insert_welcome_and_announcements_slide(presentation)
     # insert_title_with_logo_slide(presentation, "Welcome and Announcements") # does not include animation
     
     # Process both global announcements and program-specific announcements
-    for ann_dir in ["media/global_announcements", f"{media_dir}/announcements"]:
-        if os.path.exists(ann_dir):
-            images = tuple(sorted([os.path.join(ann_dir, f) for f in os.listdir(ann_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]))
-            if images:
-                insert_images(presentation, images)
-    # merge_pptx(presentation, f"{media_dir}/announcements/announcements.pptx")
+    # for ann_dir in ["media/global_announcements", f"{media_dir}/announcements"]:
+    #     if os.path.exists(ann_dir):
+    #         images = tuple(sorted([os.path.join(ann_dir, f) for f in os.listdir(ann_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]))
+    #         if images:
+    #             insert_images(presentation, images)
+    merge_pptx(presentation, "media/announcements.pptx")
 
     # membership transfers
     if membership_transfers:

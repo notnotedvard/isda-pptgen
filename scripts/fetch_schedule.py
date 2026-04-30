@@ -48,7 +48,7 @@ def fetch_data_for_date(date_str: str) -> Optional[Dict]:
                 service_data = {
                     'Preacher': get_value(row, 'Preacher', 'Preacher'),
                     'Sermon title': get_value(row, 'Sermon title', 'Sermon title'),
-                    'Bible verse': get_value(row, 'Bible verse', 'Bible verse', 'Scripture reading reference', 'Scripture reading', 'Scripture Reading'),
+                    'Bible verse': get_value(row, 'Bible verse', 'Bible verse'),
                     'Call to worship': get_value(row, 'Call to worship', 'Call to worship', 'Call To Worship'),
                     'Offerings': get_value(row, 'Offerings', 'Offerings'),
                     'Song service song 1': get_value(row, 'Song service song 1', 'Song service song 1'),
