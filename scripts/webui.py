@@ -30,7 +30,7 @@ if not TEMPLATE_FILE.exists():
 hymn_dict = {}
 
 try:
-    with open("assets/hymns.json", "r", encoding="utf-8") as f:
+    with open("assets/sda-hymns/hymns.json", "r", encoding="utf-8") as f:
         hymns_data = json.load(f)
         for h in hymns_data:
             hymn_dict[h["id"]] = f"{h['id']} - {h['name']}"

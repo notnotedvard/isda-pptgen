@@ -10,7 +10,7 @@ import sys
 MAX_LINE_LENGHT = 45
 MAX_VERSE_LENGTH = 1000
 problematic_hymns = {} # {hymn_id: [problem1, problem2, ...]}
-JSON_PATH = "assets/hymns.json"
+JSON_PATH = "assets/sda-hymns/hymns.json"
 if not os.path.exists(JSON_PATH):
     print(f"JSON file {JSON_PATH} not found. Did you run the migration script?")
     sys.exit()

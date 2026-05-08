@@ -12,7 +12,7 @@ from isda_pptgen.builder import (
     insert_hymn,
 )
 
-JSON_PATH = "assets/hymns.json"
+JSON_PATH = "assets/sda-hymns/hymns.json"
 CACHE_PATH = "cache/hymns.json"
 
 with open(JSON_PATH, "r", encoding="utf-8") as f:

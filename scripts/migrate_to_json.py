@@ -4,7 +4,7 @@ import sqlite3
 import sys
 
 DB_PATH = "assets/hymns.sqlite"
-JSON_PATH = "assets/hymns.json"
+JSON_PATH = "assets/sda-hymns/hymns.json"
 
 if not os.path.exists(DB_PATH):
     print(f"Database file {DB_PATH} not found.")

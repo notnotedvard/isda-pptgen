@@ -5,7 +5,7 @@ from pathlib import Path
 st.set_page_config(page_title="ISDA Song Manager", layout="wide")
 st.title("Song Manager")
 
-HYMNS_FILE = Path("assets/hymns.json")
+HYMNS_FILE = Path("assets/sda-hymns/hymns.json")
 EXT_SONGS_FILE = Path("assets/external_songs.json")
 
 def load_data(file_path):
