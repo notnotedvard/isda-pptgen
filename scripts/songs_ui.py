@@ -72,35 +72,78 @@ else:
         lyrics = song.get("lyrics", [])
         updated_lyrics = []
         
-        for i, block in enumerate(lyrics):
-            with st.expander(f"Block {i+1}: {block.get('label', '')} ({block.get('type', '')})", expanded=True):
-                bc1, bc2 = st.columns([1, 1])
-                with bc1:
-                    b_type = st.text_input(f"Type (verse/refrain/etc) {i}", value=block.get("type", ""), key=f"type_{i}")
-                with bc2:
-                    b_label = st.text_input(f"Label (1, Chorus, etc) {i}", value=block.get("label", ""), key=f"label_{i}")
-                
-                b_text = st.text_area(f"Text {i}", value=block.get("text", ""), key=f"text_{i}", height=250)
-                
-                if st.button(f"Remove Block {i+1}", key=f"rm_{i}"):
-                    continue # Skip appending this block
-                
+        tab_editor, tab_quick = st.tabs(["Block Editor", "Quick Import"])
+        
+        with tab_editor:
+            for i, block in enumerate(lyrics):
+                with st.expander(f"Block {i+1}: {block.get('label', '')} ({block.get('type', '')})", expanded=True):
+                    bc1, bc2 = st.columns([1, 1])
+                    with bc1:
+                        b_type = st.text_input(f"Type (verse/refrain/etc) {i}", value=block.get("type", ""), key=f"type_{i}")
+                    with bc2:
+                        b_label = st.text_input(f"Label (1, Chorus, etc) {i}", value=block.get("label", ""), key=f"label_{i}")
+                    
+                    b_text = st.text_area(f"Text {i}", value=block.get("text", ""), key=f"text_{i}", height=250)
+                    
+                    if st.button(f"Remove Block {i+1}", key=f"rm_{i}"):
+                        continue # Skip appending this block
+                    
+                    updated_lyrics.append({
+                        "type": b_type,
+                        "label": b_label,
+                        "text": b_text
+                    })
+                    
+            if st.button("Add New Block"):
                 updated_lyrics.append({
-                    "type": b_type,
-                    "label": b_label,
-                    "text": b_text
+                    "type": "verse",
+                    "label": str(len(updated_lyrics) + 1),
+                    "text": ""
                 })
-                
-        if st.button("Add New Block"):
-            updated_lyrics.append({
-                "type": "verse",
-                "label": str(len(updated_lyrics) + 1),
-                "text": ""
-            })
-            song["lyrics"] = updated_lyrics
-            songs_data[song_idx] = song
-            save_data(current_file, songs_data)
-            st.rerun()
+                song["lyrics"] = updated_lyrics
+                songs_data[song_idx] = song
+                save_data(current_file, songs_data)
+                st.rerun()
+
+        with tab_quick:
+            st.info("Paste lyrics below. Use tags like `#verse 1` or `#refrain Chorus` above each paragraph.")
+            quick_text = st.text_area("Quick Import Lyrics", height=300, key="quick_import_text")
+            
+            if st.button("Import & Replace Lyrics", type="secondary"):
+                if quick_text.strip():
+                    new_blocks = []
+                    current_block = None
+                    
+                    for line in quick_text.split('\n'):
+                        line_stripped = line.strip()
+                        if line_stripped.startswith('#'):
+                            # Save previous block if exists
+                            if current_block and current_block["text"].strip():
+                                current_block["text"] = current_block["text"].strip()
+                                new_blocks.append(current_block)
+                            
+                            # Parse new block tag
+                            tag_parts = line_stripped[1:].strip().split(' ', 1)
+                            b_type = tag_parts[0]
+                            b_label = tag_parts[1] if len(tag_parts) > 1 else ""
+                            
+                            current_block = {"type": b_type, "label": b_label, "text": ""}
+                        else:
+                            if not current_block:
+                                # Start a default block if no tag was provided and this is text
+                                current_block = {"type": "verse", "label": "1", "text": ""}
+                            if line_stripped or current_block["text"]:
+                                current_block["text"] += line + "\n"
+                    
+                    if current_block and current_block["text"].strip():
+                        current_block["text"] = current_block["text"].strip()
+                        new_blocks.append(current_block)
+                        
+                    song["lyrics"] = new_blocks
+                    songs_data[song_idx] = song
+                    save_data(current_file, songs_data)
+                    st.success("Lyrics imported successfully!")
+                    st.rerun()
             
         st.markdown("---")
         
