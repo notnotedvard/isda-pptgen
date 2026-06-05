@@ -444,7 +444,7 @@ def insert_hymn(presentation:Presentation, number):
     """Inserts slides for a hymn from the JSON database or external songs."""
     import json
     
-    with open("assets/sda-hymns/hymns.json", "r", encoding="utf-8") as f:
+    with open("assets/hymns.json", "r", encoding="utf-8") as f:
         hymns_data = json.load(f)
         
     try:

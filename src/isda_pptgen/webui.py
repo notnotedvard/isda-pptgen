@@ -8,11 +8,13 @@ import difflib
 from pathlib import Path
 import datetime
 import copy
+from isda_pptgen.build_ws import CONFIG_TEMPLATE
+
 
 # Provide access to the scripts module if needed
 sys.path.append(str(Path(".").resolve()))
-from scripts.build_ws import build_presentation, get_filename
-from scripts.fetch_schedule import fetch_data_for_date
+from isda_pptgen.build_ws import build_presentation, get_filename
+from isda_pptgen.fetch_schedule import fetch_data_for_date
 import time
 
 st.set_page_config(page_title="ISDA PPT Generator", layout="wide")
@@ -22,15 +24,16 @@ PROGRAMS_DIR = Path("configs")
 PROGRAMS_DIR.mkdir(exist_ok=True)
 MEDIA_DIR = Path("media")
 MEDIA_DIR.mkdir(exist_ok=True)
-TEMPLATE_FILE = Path("scripts/build_ws.template.yml")
+
+TEMPLATE_FILE = CONFIG_TEMPLATE
 if not TEMPLATE_FILE.exists():
-    TEMPLATE_FILE = Path("scripts/build_ws.yml")
+    TEMPLATE_FILE = Path("build_ws.yml")
 
 # --- Load Hymns for Autocomplete ---
 hymn_dict = {}
 
 try:
-    with open("assets/sda-hymns/hymns.json", "r", encoding="utf-8") as f:
+    with open("assets/hymns.json", "r", encoding="utf-8") as f:
         hymns_data = json.load(f)
         for h in hymns_data:
             hymn_dict[h["id"]] = f"{h['id']} - {h['name']}"
@@ -107,7 +110,8 @@ st.subheader(f"Service Date: {default_date.strftime('%B %d, %Y')}")
 def fetch_for_date(d: datetime.date):
     for fmt in ["%d/%m/%Y", "%d/%m", "%m/%d/%Y", "%m/%d"]:
         data = fetch_data_for_date(d.strftime(fmt))
-        if data: return data
+        if data:
+            return data
     return None
 
 def apply_fetched_data(data, keys=None):
@@ -119,7 +123,8 @@ def apply_fetched_data(data, keys=None):
     sv = data['service_details']
     
     def set_val(key, sheet_val, default_val):
-        if keys and key not in keys: return
+        if keys and key not in keys:
+            return
         final_val = sheet_val if str(sheet_val).strip() else default_val
         config[key] = final_val
         sources[key] = "sheet"
