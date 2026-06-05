@@ -20,6 +20,14 @@ def main():
     # Command 4: Songs Manager
     songs_parser = subparsers.add_parser("songs-manager", help="Start the Streamlit Songs Manager")
 
+    # Command 5: Create config
+    create_parser = subparsers.add_parser("create", help="Create an empty .yml file for the upcoming Saturday")
+    create_parser.add_argument("-p", "--populate", action="store_true", help="Automatically populate from Google Sheet")
+
+    # Command 6: Populate config
+    populate_parser = subparsers.add_parser("populate", help="Populate empty fields in a given config from Google Sheet")
+    populate_parser.add_argument("file", help="Path to the .yml config to populate")
+
     args = parser.parse_args()
 
     if args.command == "build-ws":
@@ -46,6 +54,17 @@ def main():
         songs_path = Path(songs_module.__file__).resolve()
         sys.argv = ["streamlit", "run", str(songs_path)]
         sys.exit(stcli.main())
+    elif args.command == "create":
+        from isda_pptgen.config_manager import cmd_create
+        # Basic logging config if needed
+        import logging
+        logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+        cmd_create(args.populate)
+    elif args.command == "populate":
+        from isda_pptgen.config_manager import cmd_populate
+        import logging
+        logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+        cmd_populate(Path(args.file))
     else:
         parser.print_help()
 
