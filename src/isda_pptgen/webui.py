@@ -98,6 +98,38 @@ if "field_sources" not in config:
     config["field_sources"] = {}
 sources = config["field_sources"]
 
+# ------------------------------------------------------------------
+# Detect program/day switch and flush stale widget state so every
+# field always reflects the currently selected program's config,
+# never the previous program's.
+# ------------------------------------------------------------------
+if "current_program" not in st.session_state:
+    st.session_state["current_program"] = selected_program
+
+if st.session_state["current_program"] != selected_program:
+    # Nuke every config-bound widget key — on the rerun they
+    # will re-instantiate from the freshly loaded config.
+    KEYS_TO_CLEAR = [
+        "preacher", "sermon_title", "scripture_reading_reference",
+        "call_to_worship_scripture_reference", "opening_song_hymn",
+        "closing_song_hymn", "song_service_hymns", "unallocated_offerings",
+        "mission_spotlight_url", "special_item_video_url", "meditation_video_url",
+        "date_input", "download_media",
+        "fetch_all_btn", "clear_all_btn",
+        "childrens_upload", "sermon_upload", "thermometers_upload",
+    ]
+    # Per-field fetch buttons use the pattern fetch_btn_<key>
+    for k in list(st.session_state.keys()):
+        if isinstance(k, str) and k.startswith("fetch_btn_"):
+            KEYS_TO_CLEAR.append(k)
+
+    for key in KEYS_TO_CLEAR:
+        if key in st.session_state:
+            del st.session_state[key]
+
+    st.session_state["current_program"] = selected_program
+    st.rerun()
+
 default_date = config.get("date", today)
 if isinstance(default_date, str):
     try:
@@ -186,7 +218,7 @@ def apply_fetched_data(data, keys=None):
 
 col_top1, col_top2 = st.columns([1, 1])
 with col_top1:
-    date_val = st.date_input("System Date", value=default_date, format="DD/MM/YYYY")
+    date_val = st.date_input("System Date", value=default_date, format="DD/MM/YYYY", key="date_input")
 
 # Catch global fetch action immediately after date_val is instantiated
 if st.session_state.get("fetch_all_btn"):
@@ -297,7 +329,7 @@ st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    mission_spotlight_url = st.text_input("Mission Spotlight URL", value=config.get("mission_spotlight_url", ""))
+    mission_spotlight_url = st.text_input("Mission Spotlight URL", value=config.get("mission_spotlight_url", ""), key="mission_spotlight_url")
 
     song_service_hymns = render_input("song_service_hymns", "Song Service Hymns", st.multiselect, options=all_hymn_nums, default=[], format_func=format_hymn)
     call_to_worship_scripture_reference = render_input("call_to_worship_scripture_reference", "Call to Worship Scripture Reference", st.text_input, default="")
@@ -317,7 +349,7 @@ with col1:
             st.rerun()
     childrens_story_file = st.file_uploader("Upload PPT", type=["pptx", "ppt"], key="childrens_upload")
 
-    special_item_video_url = st.text_input("Special Item Video URL", value=config.get("special_item_video_url", ""))
+    special_item_video_url = st.text_input("Special Item Video URL", value=config.get("special_item_video_url", ""), key="special_item_video_url")
 
 with col2:
     scripture_reading_reference = render_input("scripture_reading_reference", "Scripture Reading Reference", st.text_input, default="")
@@ -338,7 +370,7 @@ with col2:
             st.rerun()
     sermon_slides_file = st.file_uploader("Upload PPT", type=["pptx", "ppt"], key="sermon_upload")
     
-    meditation_video_url = st.text_input("Meditation Video URL", value=config.get("meditation_video_url", ""))
+    meditation_video_url = st.text_input("Meditation Video URL", value=config.get("meditation_video_url", ""), key="meditation_video_url")
     
     closing_song_hymn = render_input("closing_song_hymn", "Closing Song", st.selectbox, options=hymn_options_with_none, default=0, format_func=format_hymn)
     
@@ -362,7 +394,7 @@ with col2:
 st.markdown("---")
 col_b, col_dl = st.columns([1, 4])
 with col_dl:
-    download_media = st.checkbox("Download Media?", value=config.get("download_media", False))
+    download_media = st.checkbox("Download Media?", value=config.get("download_media", False), key="download_media")
 with col_b:
     generate = st.button("Generate PPT", type="primary")
 
