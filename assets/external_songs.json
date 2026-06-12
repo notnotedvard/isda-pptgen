@@ -89,5 +89,66 @@
         "text": "Your name is the highest\nYour name is the greatest\nYour name stands above them all"
       }
     ]
+  },
+  {
+    "id": 3,
+    "name": "Lord I lift your name on High",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "verse",
+        "label": "1",
+        "text": "Lord, I lift Your name on high\nLord, I love to sing Your praises\nI'm so glad You're in my life\nI'm so glad You came to save us"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "You came from heaven to earth\nTo show the way\nFrom the earth to the cross\nMy debt to pay\nFrom the cross to the grave\nFrom the grave to the sky\nLord, I lift Your name on high"
+      },
+      {
+        "type": "verse",
+        "label": "2",
+        "text": "Lord, I lift Your name on high\nLord, I love to sing Your praises\nI'm so glad You're in my life\nI'm so glad You came to save us"
+      },
+      {
+        "type": "bridge",
+        "label": "Bridge",
+        "text": "You came from heaven to earth\nTo show the way\nFrom the earth to the cross\nMy debt to pay\nFrom the cross to the grave\nFrom the grave to the sky\nLord, I lift Your name on high"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "You came from heaven to earth\nTo show the way\nFrom the earth to the cross\nMy debt to pay\nFrom the cross to the grave\nFrom the grave to the sky\nLord, I lift Your name on high"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Power of your Love",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "verse",
+        "label": "1",
+        "text": "Lord, I come to You\nLet my heart be changed, renewed\nFlowing from the grace\nThat I found in You\nLord, I've come to know\nThe weaknesses I see in me\nWill be stripped away\nBy the power of Your love"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "Hold me close\nLet Your love surround me\nBring me near\nDraw me to Your side\nAnd as I wait\nI'll rise up like the eagle\nAnd I will soar with You\nYour Spirit leads me on\nIn the power of Your love"
+      },
+      {
+        "type": "verse",
+        "label": "2",
+        "text": "Lord, unveil my eyes\nLet me see You face to face\nThe knowledge of Your love\nAs You live in me\nLord, renew my mind\nAs Your will unfolds in my life\nIn living every day\nBy the power of Your love"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "Hold me close\nLet Your love surround me\nBring me near\nDraw me to Your side\nAnd as I wait\nI'll rise up like the eagle\nAnd I will soar with You\nYour Spirit leads me on\nIn the power of Your love"
+      }
+    ]
   }
 ]
