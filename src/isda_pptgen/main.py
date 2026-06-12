@@ -28,6 +28,13 @@ def main():
     populate_parser = subparsers.add_parser("populate", help="Populate empty fields in a given config from Google Sheet")
     populate_parser.add_argument("file", help="Path to the .yml config to populate")
 
+    # Command 7: Images to slides
+    images_parser = subparsers.add_parser("images-to-slides", help="Generate a presentation from images in the current directory")
+    images_parser.add_argument("-o", "--output", default="images_presentation.pptx", help="Output file name (default: images_presentation.pptx)")
+    images_parser.add_argument("-c", "--caption", default="", help="Caption to add to each slide")
+    images_parser.add_argument("--extensions", default="jpg,jpeg,png,gif,bmp,webp", help="Comma-separated image extensions to include")
+    images_parser.add_argument("-d", "--directory", default=None, help="Directory containing images (default: current directory)")
+
     args = parser.parse_args()
 
     if args.command == "build-ws":
@@ -65,6 +72,14 @@ def main():
         import logging
         logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
         cmd_populate(Path(args.file))
+    elif args.command == "images-to-slides":
+        from isda_pptgen.images_to_slides import generate_from_images
+        generate_from_images(
+            output=args.output,
+            caption=args.caption,
+            extensions=tuple(ext.strip() for ext in args.extensions.split(",")),
+            directory=args.directory
+        )
     else:
         parser.print_help()
 
