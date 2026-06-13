@@ -98,44 +98,55 @@ if "field_sources" not in config:
     config["field_sources"] = {}
 sources = config["field_sources"]
 
-# ------------------------------------------------------------------
-# Detect program/day switch and flush stale widget state so every
-# field always reflects the currently selected program's config,
-# never the previous program's.
-# ------------------------------------------------------------------
-if "current_program" not in st.session_state:
-    st.session_state["current_program"] = selected_program
-
-if st.session_state["current_program"] != selected_program:
-    # Nuke every config-bound widget key — on the rerun they
-    # will re-instantiate from the freshly loaded config.
-    KEYS_TO_CLEAR = [
-        "preacher", "sermon_title", "scripture_reading_reference",
-        "call_to_worship_scripture_reference", "opening_song_hymn",
-        "closing_song_hymn", "song_service_hymns", "unallocated_offerings",
-        "mission_spotlight_url", "special_item_video_url", "meditation_video_url",
-        "date_input", "download_media",
-        "fetch_all_btn", "clear_all_btn",
-        "childrens_upload", "sermon_upload", "thermometers_upload",
-    ]
-    # Per-field fetch buttons use the pattern fetch_btn_<key>
-    for k in list(st.session_state.keys()):
-        if isinstance(k, str) and k.startswith("fetch_btn_"):
-            KEYS_TO_CLEAR.append(k)
-
-    for key in KEYS_TO_CLEAR:
-        if key in st.session_state:
-            del st.session_state[key]
-
-    st.session_state["current_program"] = selected_program
-    st.rerun()
-
+# Compute default_date early — needed by the program-switch block below
+# and by the date_input widget later.
 default_date = config.get("date", today)
 if isinstance(default_date, str):
     try:
         default_date = datetime.date.fromisoformat(default_date)
     except ValueError:
         default_date = today
+
+# ------------------------------------------------------------------
+# Detect program/day switch and prime session_state so every
+# widget reflects the currently selected program's config.
+# Direct session_state assignment is more reliable than clearing
+# and rerunning because Streamlit reconciles widgets from
+# session_state, not from value= parameters.
+# ------------------------------------------------------------------
+if "current_program" not in st.session_state:
+    st.session_state["current_program"] = selected_program
+
+if st.session_state["current_program"] != selected_program:
+    st.session_state["current_program"] = selected_program
+
+    # Wipe button state so clicks don't carry over
+    for btn in ["fetch_all_btn", "clear_all_btn"]:
+        if btn in st.session_state:
+            del st.session_state[btn]
+    for k in list(st.session_state.keys()):
+        if isinstance(k, str) and k.startswith("fetch_btn_"):
+            del st.session_state[k]
+
+    # Reset file uploaders
+    for k in ["childrens_upload", "sermon_upload", "thermometers_upload"]:
+        if k in st.session_state:
+            del st.session_state[k]
+
+    # Prime every config-bound widget with the new program's values
+    st.session_state["date_input"] = default_date
+    st.session_state["preacher"] = config.get("preacher", "")
+    st.session_state["sermon_title"] = config.get("sermon_title", "")
+    st.session_state["scripture_reading_reference"] = config.get("scripture_reading_reference", "")
+    st.session_state["call_to_worship_scripture_reference"] = config.get("call_to_worship_scripture_reference", "")
+    st.session_state["unallocated_offerings"] = config.get("unallocated_offerings", "Combined Budget")
+    st.session_state["opening_song_hymn"] = config.get("opening_song_hymn", 0)
+    st.session_state["closing_song_hymn"] = config.get("closing_song_hymn", 0)
+    st.session_state["song_service_hymns"] = config.get("song_service_hymns", [])
+    st.session_state["mission_spotlight_url"] = config.get("mission_spotlight_url", "")
+    st.session_state["special_item_video_url"] = config.get("special_item_video_url", "")
+    st.session_state["meditation_video_url"] = config.get("meditation_video_url", "")
+    st.session_state["download_media"] = config.get("download_media", False)
 
 st.subheader(f"Service Date: {default_date.strftime('%B %d, %Y')}")
 
