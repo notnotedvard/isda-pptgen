@@ -1,6 +1,7 @@
 """Generate a PowerPoint presentation from images in the current directory."""
 
 import os
+import re
 import tempfile
 from pathlib import Path
 from PIL import Image
@@ -13,6 +14,19 @@ from isda_pptgen.builder import delete_template_slides, insert_image_slide
 SUPPORTED_PPTX_FORMATS = {"JPEG", "PNG", "GIF", "BMP", "TIFF", "WMF"}
 # Extensions to scan for
 IMAGE_EXTENSIONS = ("jpg", "jpeg", "png", "gif", "bmp", "tiff", "tif")
+
+
+def natural_sort_key(path: Path):
+    """Generate a sort key that handles numbers in filenames naturally."""
+    # Extract number from filename for sorting (e.g., "Slide 1" -> 1, "IMG_0369" -> 369)
+    name = path.stem  # filename without extension
+    # Look for any number in the filename
+    numbers = re.findall(r'\d+', name)
+    if numbers:
+        # Return a tuple: (filename with numbers zero-padded, the number itself)
+        # This makes "Slide2" come after "Slide1", not before "Slide10"
+        return (re.sub(r'\d+', lambda m: m.group(0).zfill(10), name.lower()), int(numbers[0]))
+    return (name.lower(), 0)
 
 
 def convert_to_jpeg(image_path: Path) -> str:
@@ -91,7 +105,8 @@ def generate_from_images(output: str = "images_presentation.pptx", caption: str 
     for fmt, count in skipped_formats.items():
         print(f"Skipped {count} image(s) with unsupported format: {fmt}")
     
-    images = sorted(unique_images)
+    # Natural sort - handles "Slide1, Slide2, Slide10" correctly
+    images = sorted(unique_images, key=natural_sort_key)
     
     # Filter out very large images (> 50MB) to avoid memory issues
     max_size_mb = 50
