@@ -150,5 +150,56 @@
         "text": "Hold me close\nLet Your love surround me\nBring me near\nDraw me to Your side\nAnd as I wait\nI'll rise up like the eagle\nAnd I will soar with You\nYour Spirit leads me on\nIn the power of Your love"
       }
     ]
+  },
+  {
+    "id": 5,
+    "name": "As the Deer Panteth",
+    "author": "Martin Nystrom",
+    "key": "Bb",
+    "lyrics": [
+      {
+        "type": "verse",
+        "label": "1",
+        "text": "As the deer panteth for the water\nSo my soul longeth after Thee\nYou alone are my heart's desire\nAnd I long to worship Thee\nYou alone are my Strength, my Shield\nTo You alone may my spirit yield\nYou alone are my heart's desire\nAnd I long to worship Thee."
+      },
+      {
+        "type": "verse",
+        "label": "2",
+        "text": "You're my Friend and You are my Brother\nEven though You are a King\nI love You more than any other\nSo much more than anything\nYou alone are my Strength, my Shield\nTo You alone may my spirit yield\nYou alone are my heart's desire\nAnd I long to worship Thee."
+      },
+      {
+        "type": "verse",
+        "label": "3",
+        "text": "I want You more than gold or silver\nOnly You can satisfy\nYou alone are the real joy-giver\nAnd the apple of my eye\nYou alone are my Strength, my Shield\nTo You alone may my spirit yield\nYou alone are my heart's desire\nAnd I long to worship Thee."
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Still",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "verse",
+        "label": "1",
+        "text": "Hide me now\nUnder Your wings\nCover me\nWithin Your mighty hand"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "When the oceans rise and thunders roar\nI will soar with You above the storm\nFather, You are King over the flood\nI will be still, know You are God"
+      },
+      {
+        "type": "verse",
+        "label": "2",
+        "text": "Find rest, my soul\nIn Christ alone\nKnow His power\nIn quietness and trust"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "When the oceans rise and thunders roar\nI will soar with You above the storm\nFather, You are king over the flood\nI will be still, know You are God"
+      }
+    ]
   }
 ]
