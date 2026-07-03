@@ -85,7 +85,10 @@ if not program_names:
     st.warning("No template found.")
     st.stop()
 
-selected_program = st.sidebar.radio("Select to Edit", program_names)
+# Default the selection to the upcoming Saturday's program
+upcoming_filename = f"{next_sat.isoformat()}_Service.yml"
+default_idx = program_names.index(upcoming_filename) if upcoming_filename in program_names else 0
+selected_program = st.sidebar.radio("Select to Edit", program_names, index=default_idx)
 
 # --- Main Content Area ---
 program_path = PROGRAMS_DIR / selected_program

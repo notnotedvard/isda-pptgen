@@ -477,7 +477,13 @@ def insert_hymn(presentation:Presentation, number):
     hymn_name = target_hymn["name"]
     lyrics = target_hymn.get("lyrics", [])
 
-    insert_song_title_slide(presentation, number, hymn_name)
+    # External songs get a simple title slide (no number prefix);
+    # hymns get the song_title_slide with the #NNN prefix.
+    is_external = isinstance(number, str) and number.startswith("ext_")
+    if is_external:
+        insert_simple_title_slide(presentation, hymn_name)
+    else:
+        insert_song_title_slide(presentation, number, hymn_name)
     
     num_blocks = len(lyrics)
     for i, block in enumerate(lyrics):

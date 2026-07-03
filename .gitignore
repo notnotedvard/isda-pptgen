@@ -4,6 +4,7 @@ venv
 output
 media
 hymns/*
+external_songs/*
 ~$*
 __pycache__/*
 .DS_Store

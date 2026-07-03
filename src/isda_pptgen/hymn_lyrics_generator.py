@@ -1,4 +1,4 @@
-"""This script generates a PowerPoint presentation with the lyrics of a hymn based on a template pptx file."""
+"""This script generates PowerPoint presentations with lyrics of hymns and external songs based on a template pptx file."""
 
 import json
 import os
@@ -9,41 +9,49 @@ from pptx import Presentation
 
 from isda_pptgen.builder import (
     delete_template_slides,
+    insert_external_song_by_id,
     insert_hymn,
 )
 
-JSON_PATH = "assets/hymns.json"
-CACHE_PATH = "cache/hymns.json"
+HYMNS_JSON_PATH = "assets/hymns.json"
+HYMNS_CACHE_PATH = "cache/hymns.json"
+EXT_SONGS_JSON_PATH = "assets/external_songs.json"
+EXT_SONGS_CACHE_PATH = "cache/external_songs.json"
 
-with open(JSON_PATH, "r", encoding="utf-8") as f:
+with open(HYMNS_JSON_PATH, "r", encoding="utf-8") as f:
     HYMNS = json.load(f)
 
-NUMBER_OF_HYMNS = len(HYMNS)
+if os.path.exists(EXT_SONGS_JSON_PATH):
+    with open(EXT_SONGS_JSON_PATH, "r", encoding="utf-8") as f:
+        EXT_SONGS = json.load(f)
+else:
+    EXT_SONGS = []
 
-def generate_hymn(number:int):
-    """Genrates slides for hymn number"""
+NUMBER_OF_HYMNS = len(HYMNS)
+NUMBER_OF_EXT_SONGS = len(EXT_SONGS)
+
+
+def generate_hymn(number: int):
+    """Generates slides for hymn number."""
     hymn_name = "Unknown"
     for hymn in HYMNS:
         if hymn["id"] == number:
             hymn_name = hymn["name"]
             break
 
-    # creating a presentation
     template = Presentation("assets/template.pptx")
-    
     insert_hymn(template, number)
-
     delete_template_slides(template)
     template.save(f"hymns/{number:03} - {hymn_name}.pptx")
+
 
 def generate_all_hymns(force_generate_all=False):
     start_time = time.time()
 
-    # Load cache to compare
     CACHED_HYMNS = {}
-    if os.path.exists(CACHE_PATH):
+    if os.path.exists(HYMNS_CACHE_PATH):
         try:
-            with open(CACHE_PATH, "r", encoding="utf-8") as f:
+            with open(HYMNS_CACHE_PATH, "r", encoding="utf-8") as f:
                 for ch in json.load(f):
                     CACHED_HYMNS[ch["id"]] = ch.get("lyrics", [])
         except json.JSONDecodeError:
@@ -58,7 +66,6 @@ def generate_all_hymns(force_generate_all=False):
             if force_generate_all:
                 generate_hymn(hymn_number)
             else:
-                # compare hymn lyrics from cache and hymn from JSON
                 hymn_lyrics = hymn.get("lyrics", [])
                 hymn_cache = CACHED_HYMNS.get(hymn_number, [])
 
@@ -69,13 +76,92 @@ def generate_all_hymns(force_generate_all=False):
             print("Process interrupted.")
             break
 
-    print("Caching json...")
+    print("Caching hymns json...")
     if not os.path.exists("cache"):
         os.makedirs("cache")
-    shutil.copy(JSON_PATH, CACHE_PATH)
+    shutil.copy(HYMNS_JSON_PATH, HYMNS_CACHE_PATH)
 
     print(f"Done in {time.time() - start_time:.2f} seconds.")
 
+
+# ---------------------------------------------------------------------------
+# External songs generation
+# ---------------------------------------------------------------------------
+
+def generate_external_song(ext_id: int):
+    """Generates slides for an external song by its numeric ID.
+
+    The title slide shows only the song name (no number prefix).  The ID is
+    included in the output filename.
+    """
+    song_name = "Unknown"
+    for song in EXT_SONGS:
+        if song["id"] == ext_id:
+            song_name = song["name"]
+            break
+
+    template = Presentation("assets/template.pptx")
+    insert_external_song_by_id(template, ext_id)
+    delete_template_slides(template)
+    template.save(f"external_songs/{ext_id:03} - {song_name}.pptx")
+
+
+def generate_all_external_songs(force_generate_all=False):
+    if not EXT_SONGS:
+        print("No external songs found. Skipping.")
+        return
+
+    start_time = time.time()
+
+    CACHED_SONGS = {}
+    if os.path.exists(EXT_SONGS_CACHE_PATH):
+        try:
+            with open(EXT_SONGS_CACHE_PATH, "r", encoding="utf-8") as f:
+                for cs in json.load(f):
+                    CACHED_SONGS[cs["id"]] = cs.get("lyrics", [])
+        except json.JSONDecodeError:
+            pass
+
+    if not os.path.exists("external_songs"):
+        os.makedirs("external_songs")
+
+    for song in EXT_SONGS:
+        song_id = song["id"]
+        try:
+            if force_generate_all:
+                generate_external_song(song_id)
+            else:
+                song_lyrics = song.get("lyrics", [])
+                song_cache = CACHED_SONGS.get(song_id, [])
+
+                if song_lyrics != song_cache:
+                    generate_external_song(song_id)
+
+        except KeyboardInterrupt:
+            print("Process interrupted.")
+            break
+
+    print("Caching external songs json...")
+    if not os.path.exists("cache"):
+        os.makedirs("cache")
+    shutil.copy(EXT_SONGS_JSON_PATH, EXT_SONGS_CACHE_PATH)
+
+    print(f"Done in {time.time() - start_time:.2f} seconds.")
+
+
 if __name__ == "__main__":
-    force = input("force generate all ? (y/N): ") == "y"
-    generate_all_hymns(force)
+    print(f"Found {NUMBER_OF_HYMNS} hymns, {NUMBER_OF_EXT_SONGS} external songs.")
+    choice = input("Generate (h)ymns, (e)xternal songs, or (b)oth? [h/e/b]: ").strip().lower()
+
+    if choice in ("h", "hymns", ""):
+        force = input("Force generate all hymns? (y/N): ").strip().lower() == "y"
+        generate_all_hymns(force)
+    elif choice == "e":
+        force = input("Force generate all external songs? (y/N): ").strip().lower() == "y"
+        generate_all_external_songs(force)
+    elif choice == "b":
+        force = input("Force generate all? (y/N): ").strip().lower() == "y"
+        generate_all_hymns(force)
+        generate_all_external_songs(force)
+    else:
+        print("Invalid choice.")

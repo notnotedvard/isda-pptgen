@@ -45,8 +45,9 @@ def main():
         build_presentation(config)
     elif args.command == "generate-lyrics":
         print(f"Generating lyrics. Force: {args.force}")
-        from isda_pptgen.hymn_lyrics_generator import generate_all_hymns
+        from isda_pptgen.hymn_lyrics_generator import generate_all_hymns, generate_all_external_songs
         generate_all_hymns(args.force)
+        generate_all_external_songs(args.force)
     elif args.command == "webui":
         print("Starting Web UI...")
         from streamlit.web import cli as stcli
