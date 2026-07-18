@@ -201,5 +201,48 @@
         "text": "When the oceans rise and thunders roar\nI will soar with You above the storm\nFather, You are king over the flood\nI will be still, know You are God"
       }
     ]
+  },
+  {
+    "id": 7,
+    "name": "Bless the Lord oh my soul",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "Bless the Lord, O my soul,\nO my soul, worship His holy Name.\nSing like never before, O my soul.\nI'll worship Your holy Name."
+      },
+      {
+        "type": "verse",
+        "label": "1",
+        "text": "The sun comes up, it's a new day dawning;\nIt's time to sing Your song again.\nWhatever may pass and whatever lies before me,\nLet me be singing when the evening comes."
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "Bless the Lord, O my soul,\nO my soul, worship His holy Name.\nSing like never before, O my soul.\nI'll worship Your holy Name."
+      },
+      {
+        "type": "verse",
+        "label": "2",
+        "text": "You're rich in love and You're slow to anger,\nYour Name is great and Your heart is kind;\nFor all Your goodness I will keep on singing,\nTen thousand reasons for my heart to find."
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "Bless the Lord, O my soul,\nO my soul, worship His holy Name.\nSing like never before, O my soul.\nI'll worship Your holy Name."
+      },
+      {
+        "type": "verse",
+        "label": "3",
+        "text": "And on that day when my strength is failing,\nThe end draws near and my time has come;\nStill my soul sings Your praise unending,\nTen thousand years and then forevermore."
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "Bless the Lord, O my soul,\nO my soul, worship His holy Name.\nSing like never before, O my soul.\nI'll worship Your holy Name."
+      }
+    ]
   }
 ]
