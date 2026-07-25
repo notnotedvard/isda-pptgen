@@ -60,22 +60,36 @@ def generate_all_hymns(force_generate_all=False):
     if not os.path.exists("hymns"):
         os.makedirs("hymns")
 
-    for hymn in HYMNS:
+    total = len(HYMNS)
+    generated = 0
+    skipped = 0
+
+    for i, hymn in enumerate(HYMNS, 1):
         hymn_number = hymn["id"]
         try:
-            if force_generate_all:
-                generate_hymn(hymn_number)
-            else:
+            needs_gen = force_generate_all
+            if not force_generate_all:
                 hymn_lyrics = hymn.get("lyrics", [])
                 hymn_cache = CACHED_HYMNS.get(hymn_number, [])
+                needs_gen = hymn_lyrics != hymn_cache
 
-                if hymn_lyrics != hymn_cache:
-                    generate_hymn(hymn_number)
+            if needs_gen:
+                generate_hymn(hymn_number)
+                generated += 1
+            else:
+                skipped += 1
 
         except KeyboardInterrupt:
-            print("Process interrupted.")
+            print("\nProcess interrupted.")
             break
 
+        print(
+            f"\r  Hymns: {i}/{total} ({i * 100 // total}%)  "
+            f"[generated {generated}, skipped {skipped}]",
+            end="", flush=True,
+        )
+
+    print()  # newline after progress line
     print("Caching hymns json...")
     if not os.path.exists("cache"):
         os.makedirs("cache")
@@ -125,22 +139,36 @@ def generate_all_external_songs(force_generate_all=False):
     if not os.path.exists("external_songs"):
         os.makedirs("external_songs")
 
-    for song in EXT_SONGS:
+    total = len(EXT_SONGS)
+    generated = 0
+    skipped = 0
+
+    for i, song in enumerate(EXT_SONGS, 1):
         song_id = song["id"]
         try:
-            if force_generate_all:
-                generate_external_song(song_id)
-            else:
+            needs_gen = force_generate_all
+            if not force_generate_all:
                 song_lyrics = song.get("lyrics", [])
                 song_cache = CACHED_SONGS.get(song_id, [])
+                needs_gen = song_lyrics != song_cache
 
-                if song_lyrics != song_cache:
-                    generate_external_song(song_id)
+            if needs_gen:
+                generate_external_song(song_id)
+                generated += 1
+            else:
+                skipped += 1
 
         except KeyboardInterrupt:
-            print("Process interrupted.")
+            print("\nProcess interrupted.")
             break
 
+        print(
+            f"\r  Songs:  {i}/{total} ({i * 100 // total}%)  "
+            f"[generated {generated}, skipped {skipped}]",
+            end="", flush=True,
+        )
+
+    print()  # newline after progress line
     print("Caching external songs json...")
     if not os.path.exists("cache"):
         os.makedirs("cache")
