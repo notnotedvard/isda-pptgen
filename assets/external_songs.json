@@ -244,5 +244,33 @@
         "text": "Bless the Lord, O my soul,\nO my soul, worship His holy Name.\nSing like never before, O my soul.\nI'll worship Your holy Name."
       }
     ]
+  },
+  {
+    "id": 8,
+    "name": "Shine Jesus Shine",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "verse",
+        "label": "1",
+        "text": "Lord, the light of Your love is shining,\nIn the midst of the darkness, shining,\nJesus, Light of the World,\nshine upon us,\nSet us free by the truth\nYou now bring us,\nShine on me, shine on me."
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "Shine, Jesus shine,\nFill this land with the Father’s glory,\nBlaze, Spirit blaze,\nSet our hearts on fire.\nFlow, river fl ow,\nFlood the nations with grace and mercy,\nSend forth Your word,\nLord, and let there be light."
+      },
+      {
+        "type": "verse",
+        "label": "2",
+        "text": "Lord, I come to Your awesome presence,\nFrom the shadows into Your radiance,\nBy the blood I may enter Your brightness,\nSearch me, try me, consume all my darkness,\nShine on me, shine on me."
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "Shine, Jesus shine,\nFill this land with the Father’s glory,\nBlaze, Spirit blaze,\nSet our hearts on fire.\nFlow, river flow,\nFlood the nations with grace and mercy,\nSend forth Your word,\nLord, and let there be light."
+      }
+    ]
   }
 ]
