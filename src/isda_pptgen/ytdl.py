@@ -14,7 +14,6 @@ import os
 import shutil
 import subprocess
 import sys
-from typing import Optional
 
 try:
     import yt_dlp
@@ -47,13 +46,19 @@ def check_dependencies(output_dir: str = "media"):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
     elif not os.access(output_dir, os.W_OK):
-        raise PermissionError(f"The directory {output_dir} is not writable. Please check the permissions.")
+        raise PermissionError(
+            f"The directory {output_dir} is not writable. Please check the permissions."
+        )
 
     if yt_dlp is None:
-        raise ImportError("yt-dlp module is not installed. Please install it to use this function.")
+        raise ImportError(
+            "yt-dlp module is not installed. Please install it to use this function."
+        )
 
     if shutil.which("ffmpeg") is None:
-        raise ImportError("ffmpeg is not installed. Please install it to use this function.")
+        raise ImportError(
+            "ffmpeg is not installed. Please install it to use this function."
+        )
 
 
 def extract_first_frame(video_path: str, output_path: str) -> None:
@@ -74,7 +79,9 @@ def extract_first_frame(video_path: str, output_path: str) -> None:
         output_path,
     ]
 
-    subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(
+        command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
 
 
 def merge_subtitles(video_path: str, subtitle_path: str, output_path: str) -> None:
@@ -106,7 +113,9 @@ def merge_subtitles(video_path: str, subtitle_path: str, output_path: str) -> No
         output_path,
     ]
 
-    subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(
+        command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
     print(f"Subtitles merged and saved to {output_path}.")
 
 
@@ -182,23 +191,27 @@ def burn_subtitles(video_path: str, subtitle_path: str, output_path: str) -> Non
 
     try:
         ass_name = os.path.basename(ass_path)
-        subprocess.run([
-            "ffmpeg",
-            "-i",
-            abs_video,
-            "-vf",
-            f"ass={ass_name}",
-            "-c:v",
-            "libx264",
-            "-preset",
-            "medium",
-            "-crf",
-            "23",
-            "-c:a",
-            "aac",
-            "-y",
-            abs_output,
-        ], check=True, cwd=sub_dir)
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-i",
+                abs_video,
+                "-vf",
+                f"ass={ass_name}",
+                "-c:v",
+                "libx264",
+                "-preset",
+                "medium",
+                "-crf",
+                "23",
+                "-c:a",
+                "aac",
+                "-y",
+                abs_output,
+            ],
+            check=True,
+            cwd=sub_dir,
+        )
         print(f"Subtitles burned (via ASS) and saved to {output_path}.")
     except subprocess.CalledProcessError:
         print("ASS filter path failed; falling back to soft subtitle embedding.")
@@ -215,7 +228,7 @@ def burn_subtitles(video_path: str, subtitle_path: str, output_path: str) -> Non
 def download_youtube_video(
     url: str,
     output_dir: str = "media",
-    filename: Optional[str] = None,
+    filename: str | None = None,
     download_subtitles: bool = True,
 ) -> str:
     """Downloads the youtube video using yt-dlp and returns the path to the video file.
@@ -251,10 +264,12 @@ def download_youtube_video(
     }
 
     if download_subtitles:
-        ydl_opts["postprocessors"].append({
-            "key": "FFmpegSubtitlesConvertor",
-            "format": "srt",
-        })
+        ydl_opts["postprocessors"].append(
+            {
+                "key": "FFmpegSubtitlesConvertor",
+                "format": "srt",
+            }
+        )
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
@@ -272,11 +287,18 @@ def download_youtube_video(
         # non-fatal: thumbnail extraction failed
         print("Warning: failed to extract thumbnail.")
 
-    print(f"Video downloaded and saved to {final_video_path}. Thumbnail saved to {base_path}.png.")
+    print(
+        f"Video downloaded and saved to {final_video_path}. Thumbnail saved to {base_path}.png."
+    )
     return final_video_path
 
 
-def download_and_burn(url: str, output_dir: str = "media", filename: Optional[str] = None, burn: bool = True) -> str:
+def download_and_burn(
+    url: str,
+    output_dir: str = "media",
+    filename: str | None = None,
+    burn: bool = True,
+) -> str:
     """Downloads a video and (optionally) burns English subtitles into the final MP4.
 
     Returns the path to the final MP4 file.
@@ -285,20 +307,28 @@ def download_and_burn(url: str, output_dir: str = "media", filename: Optional[st
     if filename:
         filename = os.path.splitext(filename)[0]
 
-    downloaded_video = download_youtube_video(url, output_dir=output_dir, filename=filename, download_subtitles=burn)
+    downloaded_video = download_youtube_video(
+        url, output_dir=output_dir, filename=filename, download_subtitles=burn
+    )
 
     base_path, _ = os.path.splitext(downloaded_video)
 
     # look for subtitle files that start with the base path
     subtitle_candidates = glob.glob(base_path + "*.srt")
 
-    final_path = os.path.join(output_dir, f"{filename}.mp4") if filename else downloaded_video
+    final_path = (
+        os.path.join(output_dir, f"{filename}.mp4") if filename else downloaded_video
+    )
 
     if burn and subtitle_candidates:
         # choose EN subtitle if available, else first candidate
         subtitle_path = None
         for cand in subtitle_candidates:
-            if cand.lower().endswith(".en.srt") or cand.lower().endswith(".en-us.srt") or cand.lower().endswith(".en-gb.srt"):
+            if (
+                cand.lower().endswith(".en.srt")
+                or cand.lower().endswith(".en-us.srt")
+                or cand.lower().endswith(".en-gb.srt")
+            ):
                 subtitle_path = cand
                 break
         if subtitle_path is None:
@@ -325,20 +355,39 @@ def download_and_burn(url: str, output_dir: str = "media", filename: Optional[st
     return final_path
 
 
-def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Download a YouTube video and burn English subtitles (if available).")
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Download a YouTube video and burn English subtitles (if available)."
+    )
     p.add_argument("url", help="YouTube video URL to download")
-    p.add_argument("-o", "--output-dir", default="media", help="Output directory for video and subtitles")
-    p.add_argument("-f", "--filename", default=None, help="Desired output filename (without extension)")
-    p.add_argument("--no-burn", dest="burn", action="store_false", help="Do not burn subtitles into the video (just download them)")
+    p.add_argument(
+        "-o",
+        "--output-dir",
+        default="media",
+        help="Output directory for video and subtitles",
+    )
+    p.add_argument(
+        "-f",
+        "--filename",
+        default=None,
+        help="Desired output filename (without extension)",
+    )
+    p.add_argument(
+        "--no-burn",
+        dest="burn",
+        action="store_false",
+        help="Do not burn subtitles into the video (just download them)",
+    )
     return p.parse_args(argv)
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
 
     try:
-        out = download_and_burn(args.url, output_dir=args.output_dir, filename=args.filename, burn=args.burn)
+        out = download_and_burn(
+            args.url, output_dir=args.output_dir, filename=args.filename, burn=args.burn
+        )
         print(out)
         return 0
     except Exception as exc:

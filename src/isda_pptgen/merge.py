@@ -10,15 +10,14 @@ from __future__ import annotations
 
 import copy
 import logging
-from typing import Dict, Tuple
 
 from lxml import etree
 from pptx import Presentation
 from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 
 from isda_pptgen.duplicate import (
-    _object_rels,
     _exp_add_slide,
+    _object_rels,
     clone_slide_layout,
     clone_slide_master,
     copy_shapes,
@@ -180,7 +179,7 @@ def _copy_slide_timing(src_slide, dest_slide) -> None:
 def _import_masters(
     target: Presentation,
     source: Presentation,
-) -> Tuple[Dict[str, object], Dict[str, object]]:
+) -> tuple[dict[str, object], dict[str, object]]:
     """
     Clone every slide master (and its layouts) from *source* into *target*.
 
@@ -188,8 +187,8 @@ def _import_masters(
       - master_map  : source master key  → cloned target master object
       - layout_map  : source layout key  → cloned target layout object
     """
-    master_map: Dict[str, object] = {}
-    layout_map: Dict[str, object] = {}
+    master_map: dict[str, object] = {}
+    layout_map: dict[str, object] = {}
 
     for src_master in source.slide_masters:
         mkey = _master_key(src_master)

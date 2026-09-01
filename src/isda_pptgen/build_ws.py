@@ -4,6 +4,7 @@ import argparse
 import datetime
 from importlib import import_module
 from pathlib import Path
+
 from pptx import Presentation
 
 try:
@@ -11,30 +12,26 @@ try:
 except ModuleNotFoundError:
     yaml = None
 
+import json
+import os
+import urllib.parse
+import urllib.request
+
 from isda_pptgen.builder import (
-    clear_media_folder,
     delete_template_slides,
     insert_end_slide,
-    insert_hymn,
     insert_external_song_by_id,
-    insert_images,
-    insert_scripture_slide,
-    insert_welcome_and_announcements_slide,
+    insert_hymn,
     insert_membership_transfer_slide,
+    insert_scripture_slide,
     insert_sermon_title_slide,
     insert_start_slide,
+    insert_thithes_and_offerings_slides,
     insert_title_with_logo_slide,
     insert_video_slide,
-    insert_thithes_and_offerings_slides,
 )
-
-from isda_pptgen.ytdl import download_youtube_video, burn_subtitles
 from isda_pptgen.merge import merge_pptx
-import os
-import json
-import urllib.request
-import urllib.parse
-
+from isda_pptgen.ytdl import burn_subtitles, download_youtube_video
 
 CONFIG_TEMPLATE = Path(__file__).with_name("build_ws.template.yml")
 DEFAULT_CONFIG = Path(__file__).with_name("build_ws.yml")
@@ -75,6 +72,7 @@ def parse_int_list(value):
     """
     if value is None:
         return []
+
     def _convert_item(item):
         if item is None:
             return None
@@ -111,18 +109,20 @@ def parse_int_list(value):
 def get_bible_verses(reference, version="kjv"):
     """
     Fetches Bible verses from bible-api.com.
-    Note: Free APIs often lack modern copyrighted versions like NIV, 
+    Note: Free APIs often lack modern copyrighted versions like NIV,
     so 'kjv', 'web', 'bbe' are the typical available options.
     """
     if not reference:
         return (("1", "No reference provided."),)
-        
+
     url = f"https://bible-api.com/{urllib.parse.quote(reference)}?translation={version}"
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with urllib.request.urlopen(req) as response:
             data = json.loads(response.read().decode())
-            return tuple((str(v["verse"]), v["text"].strip()) for v in data.get("verses", []))
+            return tuple(
+                (str(v["verse"]), v["text"].strip()) for v in data.get("verses", [])
+            )
     except Exception as e:
         print(f"Error fetching {reference}: {e}")
         return (("?", "Error fetching scripture."),)
@@ -135,7 +135,7 @@ def get_filename(date: datetime.date) -> str:
         suffix = "th"
     else:
         suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
-    
+
     month_year = date.strftime(" %B %Y")
     return f"ISDA Church Slides - {day}{suffix}{month_year}"
 
@@ -146,10 +146,12 @@ def build_presentation(config: dict):
         date = raw_date
     else:
         date = datetime.date.fromisoformat(str(raw_date))
-        
+
     mission_spotlight_url = config.get("mission_spotlight_url", "") or ""
     song_service_hymns = parse_int_list(config.get("song_service_hymns"))
-    call_to_worship_scripture_reference = config.get("call_to_worship_scripture_reference", "") or ""
+    call_to_worship_scripture_reference = (
+        config.get("call_to_worship_scripture_reference", "") or ""
+    )
     opening_song_hymn = parse_optional_int(config.get("opening_song_hymn"))
     childrens_story_ppt = config.get("childrens_story_ppt", "") or ""
     thermometers_slides = config.get("thermometers_slides", "") or ""
@@ -171,6 +173,7 @@ def build_presentation(config: dict):
 
     def clear_program_media():
         import glob
+
         for ext in ["*.png", "*.srt", "*.mp4"]:
             for file in glob.glob(os.path.join(media_dir, ext)):
                 os.remove(file)
@@ -186,32 +189,64 @@ def build_presentation(config: dict):
     if download_media:
         clear_program_media()
         if mission_spotlight_url != "":
-            download_youtube_video(mission_spotlight_url, output_dir=media_dir, filename="mission-spotlight", download_subtitles=True)
+            download_youtube_video(
+                mission_spotlight_url,
+                output_dir=media_dir,
+                filename="mission-spotlight",
+                download_subtitles=True,
+            )
             import glob
             import shutil
+
             srt_files = glob.glob(f"{media_dir}/mission-spotlight*.srt")
             if srt_files:
-                burn_subtitles(f"{media_dir}/mission-spotlight.mp4", srt_files[0], f"{media_dir}/mission-spotlight-subbed.mp4")
+                burn_subtitles(
+                    f"{media_dir}/mission-spotlight.mp4",
+                    srt_files[0],
+                    f"{media_dir}/mission-spotlight-subbed.mp4",
+                )
             else:
-                shutil.copy(f"{media_dir}/mission-spotlight.mp4", f"{media_dir}/mission-spotlight-subbed.mp4")
+                shutil.copy(
+                    f"{media_dir}/mission-spotlight.mp4",
+                    f"{media_dir}/mission-spotlight-subbed.mp4",
+                )
 
         if special_item_video_url != "":
-            download_youtube_video(special_item_video_url, output_dir=media_dir, filename="special-item", download_subtitles=False)
+            download_youtube_video(
+                special_item_video_url,
+                output_dir=media_dir,
+                filename="special-item",
+                download_subtitles=False,
+            )
         if meditation_video_url != "":
-            download_youtube_video(meditation_video_url, output_dir=media_dir, filename="meditation", download_subtitles=False)
+            download_youtube_video(
+                meditation_video_url,
+                output_dir=media_dir,
+                filename="meditation",
+                download_subtitles=False,
+            )
 
     # fetch scripture
     print("Fetching scripture...")
-    call_to_worship_scripture = get_bible_verses(call_to_worship_scripture_reference, version="kjv")
+    call_to_worship_scripture = get_bible_verses(
+        call_to_worship_scripture_reference, version="kjv"
+    )
     scripture_reading = get_bible_verses(scripture_reading_reference, version="kjv")
 
     print("Building presentation...")
     # start slides
     insert_start_slide(presentation, date)
-    insert_title_with_logo_slide(presentation, "Sabbath School Offering & Mission Spotlight")
+    insert_title_with_logo_slide(
+        presentation, "Sabbath School Offering & Mission Spotlight"
+    )
 
     # mission spotlight
-    insert_video_slide(presentation, f"{media_dir}/mission-spotlight-subbed.mp4", f"{media_dir}/mission-spotlight.png", "Mission Spotlight")
+    insert_video_slide(
+        presentation,
+        f"{media_dir}/mission-spotlight-subbed.mp4",
+        f"{media_dir}/mission-spotlight.png",
+        "Mission Spotlight",
+    )
 
     # song service
     insert_title_with_logo_slide(presentation, "Song Service")
@@ -221,7 +256,7 @@ def build_presentation(config: dict):
     # announcements
     # insert_welcome_and_announcements_slide(presentation)
     # insert_title_with_logo_slide(presentation, "Welcome and Announcements") # does not include animation
-    
+
     # Process both global announcements and program-specific announcements
     # for ann_dir in ["media/global_announcements", f"{media_dir}/announcements"]:
     #     if os.path.exists(ann_dir):
@@ -239,12 +274,14 @@ def build_presentation(config: dict):
                 in_or_out=transfer.get("in_or_out"),
                 reading=transfer.get("reading"),
                 name=transfer.get("name"),
-                church=transfer.get("church")
+                church=transfer.get("church"),
             )
 
     # opening song
     insert_title_with_logo_slide(presentation, "Call to Worship")
-    insert_scripture_slide(presentation, call_to_worship_scripture_reference, call_to_worship_scripture)
+    insert_scripture_slide(
+        presentation, call_to_worship_scripture_reference, call_to_worship_scripture
+    )
     insert_title_with_logo_slide(presentation, "Opening Song")
     if opening_song_hymn is not None:
         insert_song(presentation, opening_song_hymn)
@@ -266,7 +303,11 @@ def build_presentation(config: dict):
     # special music
     insert_title_with_logo_slide(presentation, "Special Music")
     if special_item_video_url != "":
-        insert_video_slide(presentation, f"{media_dir}/special-item.mp4", f"{media_dir}/special-item.png")
+        insert_video_slide(
+            presentation,
+            f"{media_dir}/special-item.mp4",
+            f"{media_dir}/special-item.png",
+        )
 
     # scripture reading
     insert_title_with_logo_slide(presentation, "Scripture Reading")
@@ -280,7 +321,9 @@ def build_presentation(config: dict):
 
     insert_title_with_logo_slide(presentation, "Meditation")
     if meditation_video_url != "":
-        insert_video_slide(presentation, f"{media_dir}/meditation.mp4", f"{media_dir}/meditation.png")
+        insert_video_slide(
+            presentation, f"{media_dir}/meditation.mp4", f"{media_dir}/meditation.png"
+        )
 
     # closing song
     insert_title_with_logo_slide(presentation, "Closing Song")
@@ -298,7 +341,9 @@ def build_presentation(config: dict):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate a worship service presentation from a YAML config file.")
+    parser = argparse.ArgumentParser(
+        description="Generate a worship service presentation from a YAML config file."
+    )
     parser.add_argument(
         "--config",
         default=DEFAULT_CONFIG,

@@ -86,7 +86,8 @@ def generate_all_hymns(force_generate_all=False):
         print(
             f"\r  Hymns: {i}/{total} ({i * 100 // total}%)  "
             f"[generated {generated}, skipped {skipped}]",
-            end="", flush=True,
+            end="",
+            flush=True,
         )
 
     print()  # newline after progress line
@@ -101,6 +102,7 @@ def generate_all_hymns(force_generate_all=False):
 # ---------------------------------------------------------------------------
 # External songs generation
 # ---------------------------------------------------------------------------
+
 
 def generate_external_song(ext_id: int):
     """Generates slides for an external song by its numeric ID.
@@ -165,7 +167,8 @@ def generate_all_external_songs(force_generate_all=False):
         print(
             f"\r  Songs:  {i}/{total} ({i * 100 // total}%)  "
             f"[generated {generated}, skipped {skipped}]",
-            end="", flush=True,
+            end="",
+            flush=True,
         )
 
     print()  # newline after progress line
@@ -179,13 +182,19 @@ def generate_all_external_songs(force_generate_all=False):
 
 if __name__ == "__main__":
     print(f"Found {NUMBER_OF_HYMNS} hymns, {NUMBER_OF_EXT_SONGS} external songs.")
-    choice = input("Generate (h)ymns, (e)xternal songs, or (b)oth? [h/e/b]: ").strip().lower()
+    choice = (
+        input("Generate (h)ymns, (e)xternal songs, or (b)oth? [h/e/b]: ")
+        .strip()
+        .lower()
+    )
 
     if choice in ("h", "hymns", ""):
         force = input("Force generate all hymns? (y/N): ").strip().lower() == "y"
         generate_all_hymns(force)
     elif choice == "e":
-        force = input("Force generate all external songs? (y/N): ").strip().lower() == "y"
+        force = (
+            input("Force generate all external songs? (y/N): ").strip().lower() == "y"
+        )
         generate_all_external_songs(force)
     elif choice == "b":
         force = input("Force generate all? (y/N): ").strip().lower() == "y"

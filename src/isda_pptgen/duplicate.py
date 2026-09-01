@@ -1,5 +1,6 @@
 """Utilities to duplicate a slide. Source : https://gist.github.com/Dasc3er/2af5069afb728c39d54434cb28a1dbb8"""
 
+
 def _object_rels(obj):
     try:
         rels = obj.rels
@@ -11,6 +12,7 @@ def _object_rels(obj):
         return list(rels)
     except Exception:
         return []
+
 
 def _exp_add_slide(ppt, slide_layout):
     """
@@ -105,7 +107,11 @@ def copy_shapes(source, dest):
             # Get image contents
             content = io.BytesIO(shape.image.blob)
             result = dest.shapes.add_picture(
-                content, shape.left, shape.top, shape.width, shape.height,
+                content,
+                shape.left,
+                shape.top,
+                shape.width,
+                shape.height,
             )
             result.name = shape.name
             result.crop_left = shape.crop_left
@@ -244,7 +250,9 @@ def dataframe_to_chart_data(df):
     if edge_cases > 0:
         import warnings
 
-        warnings.warn("Series data containing NaN/INF values: filled to empty", stacklevel=2)
+        warnings.warn(
+            "Series data containing NaN/INF values: filled to empty", stacklevel=2
+        )
 
     return copy_data
 
@@ -343,7 +351,8 @@ def clone_chart(graphical_frame, dest):
 
     cloned_styling = copy.deepcopy(old_chart_part._element)
     cloned_styling.xpath(".//c:externalData")[0].set(
-        id_attribute, chart_data_reference_id,
+        id_attribute,
+        chart_data_reference_id,
     )
     cloned_styling.xpath(".//c:autoUpdate")[0].set("val", "1")
     new_chart_part.part._element = cloned_styling
@@ -681,7 +690,8 @@ def clone_slide_master(pres, slide_master):
     el_ref = pres.slide_masters._sldMasterIdLst._add_sldMasterId()
     el_ref.set("id", str(sel_id))
     el_ref.set(
-        "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id", rId,
+        "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id",
+        rId,
     )
 
     # Remove references of Slide Layouts from the new Slide Master
@@ -731,7 +741,9 @@ def clone_slide_layout(ppt, source_layout, dest_slide_master):
     # Generate the new Slide Layout part object
     new_el = copy.deepcopy(source_layout.element)
     new_ref = SlideLayoutPart.new(
-        ppt.slide_masters, slide_master.part, etree.tostring(new_el),
+        ppt.slide_masters,
+        slide_master.part,
+        etree.tostring(new_el),
     )
 
     # Connect the Slide Master to the new Slide Layout
@@ -742,7 +754,8 @@ def clone_slide_layout(ppt, source_layout, dest_slide_master):
     el_ref = slide_master.slide_layouts._sldLayoutIdLst._add_sldLayoutId()
     el_ref.set("id", str(sel_id))
     el_ref.set(
-        "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id", rId,
+        "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id",
+        rId,
     )
 
     # Connect the Slide Layout to the Slide Master
@@ -753,7 +766,6 @@ def clone_slide_layout(ppt, source_layout, dest_slide_master):
 
     # Ensure all shapes of the Slide Layout are set up correctly
     _clone_sml_shapes(source_layout, dest)
-
 
 
 from pptx.package import Package
@@ -813,7 +825,10 @@ def _fix_package_ref(dest):
 
 
 def estimate_text_box_size(
-    txt, font, max_width: int | None = None, line_spacing: int = 4,  # ImageFont
+    txt,
+    font,
+    max_width: int | None = None,
+    line_spacing: int = 4,  # ImageFont
 ):
     """
     Example of use:
@@ -857,7 +872,10 @@ def estimate_text_box_size(
         actual_txt = txt
 
     left, top, right, bottom = draw.multiline_textbbox(
-        (0, 0), actual_txt, font=font, spacing=line_spacing,
+        (0, 0),
+        actual_txt,
+        font=font,
+        spacing=line_spacing,
     )
     ascent, descent = font.getmetrics()
 
