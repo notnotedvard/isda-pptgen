@@ -1,101 +1,138 @@
 # ISDA PPT Generator
 
-Automatic generation of PowerPoint presentationsThe project now uses a single JSON file instead of an SQLite DB: `assets/hymns.json`.
+Automatic generation of PowerPoint presentations for Seventh-day Adventist worship services.
 
-Schema (per hymn object)
-om templates using python-pptx.
-
-This generator supports the following in the template:
-- Text
-- Images
-- Charts
-- Maybe Tables
-
-It definitely does not support videos or audio or any other complex objects.
+Builds slide decks from YAML config files using a `python-pptx` template, with support for hymns, sermons, announcements, video clips, and Google Sheets integration for schedule data.
 
 ## Setup
 
-This project uses `uv` for dependency management. To set up the project and install the CLI hook:
+This project uses `uv` for dependency management:
 
 ```bash
 uv sync
 ```
 
-## Usage (CLI)
+Python 3.13+ required.
 
-The project provides a command-line interface `isda-pptgen`. You can run it via `uv`:
+## Usage
+
+The CLI is installed as `isda-pptgen`. Run via `uv`:
 
 ```bash
 uv run isda-pptgen --help
 ```
 
-### Available Commands
+### Commands
 
-- **Build Worship Service Slides:**
-  ```bash
-  uv run isda-pptgen build-ws --config configs/2026-04-18_Service.yml
-  ```
+#### `build-ws` — Build worship service slides
 
-- **Generate Hymn Lyrics:**
-  ```bash
-  uv run isda-pptgen generate-lyrics [--force]
-  ```
+```bash
+uv run isda-pptgen build-ws --config configs/2026-04-18_Service.yml
+```
 
-- **Web UI (Worship Builder):**
-  Launch the interactive Streamlit interface to configure and build service slides.
-  ```bash
-  uv run isda-pptgen webui
-  ```
+Reads a YAML service config and generates a `.pptx` with hymns, videos, images, sermon titles, and announcements.
 
-- **Songs Manager:**
-  Launch the interactive Streamlit editor to manage the hymn and external song databases.
-  ```bash
-  uv run isda-pptgen songs-manager
-  ```
+#### `generate-lyrics` — Generate hymn lyric slides
+
+```bash
+uv run isda-pptgen generate-lyrics [--force]
+```
+
+Pre-renders individual hymn presentations (used as building blocks by `build-ws`). The `--force` flag regenerates all hymns even if they already exist.
+
+#### `webui` — Worship Builder (Streamlit)
+
+```bash
+uv run isda-pptgen webui
+```
+
+Interactive web interface to create, edit, preview, and build service configs visually.
+
+#### `songs-manager` — Song database editor (Streamlit)
+
+```bash
+uv run isda-pptgen songs-manager
+```
+
+Manage the hymn and external song databases (add, edit, delete entries).
+
+#### `create` — Create a config for the upcoming Saturday
+
+```bash
+uv run isda-pptgen create
+uv run isda-pptgen create --populate   # auto-populate from Google Sheets
+```
+
+Generates an empty YAML service file for the next Saturday, optionally pre-filled from the church's Google Sheet schedule.
+
+#### `populate` — Populate empty fields in an existing config
+
+```bash
+uv run isda-pptgen populate configs/2026-09-05_Service.yml
+```
+
+Fills in missing values (hymns, speakers, etc.) from the Google Sheet schedule.
+
+#### `images-to-slides` — Turn image files into a presentation
+
+```bash
+uv run isda-pptgen images-to-slides -d ./photos --caption "My Caption"
+```
+
+Options:
+- `-o` / `--output` — Output filename (default: `images_presentation.pptx`)
+- `-c` / `--caption` — Caption to add to each slide
+- `--extensions` — Comma-separated image extensions (default: `jpg,jpeg,png,gif,bmp,webp`)
+- `-d` / `--directory` — Directory to scan (default: current directory)
 
 ## Project Structure
 
-- `src/isda_pptgen/` - Core library modules and CLI entry point (`main.py`).
-- `configs/` - YAML configuration files for specific services.
-- `assets/` - Static assets like `template.pptx` and `hymns.json`.
-- `tests/` - Quality assurance tests, including data integrity checks for hymns.
-- `output/` - Default directory for generated presentations.
+```
+isda-pptgen/
+├── src/isda_pptgen/
+│   ├── main.py                 # CLI entry point
+│   ├── build_ws.py             # Worship service builder orchestration
+│   ├── builder.py              # Core slide creation (text, images, video, charts)
+│   ├── config_manager.py       # Config creation and Google Sheets population
+│   ├── duplicate.py            # Slide duplication utilities (shapes, charts, tables)
+│   ├── fetch_schedule.py       # Google Sheets API client (gspread)
+│   ├── hymn_lyrics_generator.py # Pre-render hymn slides to disk
+│   ├── images_to_slides.py     # Generate .pptx from image files
+│   ├── merge.py                # PPTX merge with source formatting preservation
+│   ├── songs_ui.py             # Streamlit song database editor
+│   ├── webui.py                # Streamlit worship builder UI
+│   ├── ytdl.py                 # YouTube downloader (yt-dlp wrapper)
+│   ├── build_ws.yml            # Default service config
+│   └── build_ws.template.yml   # YAML config template
+├── assets/
+│   ├── template.pptx           # PowerPoint template
+│   ├── hymns.json              # Hymn database
+│   └── external_songs.json     # External song database
+├── configs/                    # Service YAML configs (gitignored)
+├── output/                     # Generated presentations (gitignored)
+├── media/                      # Downloaded/downloadable media (gitignored)
+├── cache/                      # Cached data (gitignored)
+├── hymns/                      # Pre-rendered hymn slides (gitignored)
+├── external_songs/             # Pre-rendered external song slides (gitignored)
+├── tests/
+│   ├── test_main.py            # CLI help smoke test
+│   └── test_hymns_integrity.py # Data integrity checks for hymns
+└── pyproject.toml
+```
 
 ## Quality Control
 
-To run the data integrity checks (ensuring lyrics don't overflow slides, no trailing whitespace, etc.):
-
 ```bash
-uv run pytest tests/test_hymns_integrity.py
+uv run pytest
 ```
 
-## Data (assets/hymns.json)
+The hymn integrity tests verify that lyrics fit within slides, there is no trailing whitespace, and all data references are valid.
 
-The project now uses a single JSON file instead of an SQLite DB: `/Users/e/dev/GitHub/isda-pptgen/assets/hymns.json`. The file is generated by the provided migration script (`migrate_to_json.py`) from the previous tables.
+## Data
 
-Schema (per hymn object)
-- id: integer
-- name: string
-- author: string | null
-- key: string | null (formerly `major_key`)
-- lyrics: array of lyric objects (may be empty)
+Hymn and song data lives in `assets/hymns.json` and `assets/external_songs.json` — a JSON collection of hymns/songs with lyrics structured as verses and refrains. The schema:
 
-Lyric object shapes
-- Verse
-  - type: "verse"
-  - number: integer (verse number)
-  - text: string (may include blank lines to indicate slide splits)
-- Refrain
-  - type: "refrain"
-  - text: string
-  - position: integer (0 = before first verse and after every verse, 1 = after every verse, 2 = alternative after last verse)
-
-Mapping from the old DB
-- hymns -> top-level fields (id, name, author, major_key -> key)
-- verses -> lyrics entries with type "verse" and number
-- refrains -> lyrics entries with type "refrain" and position
-
-Example entry
+```json
 {
   "id": 1,
   "name": "Praise to the Lord",
@@ -106,13 +143,8 @@ Example entry
     { "type": "refrain", "text": "…", "position": 1 }
   ]
 }
+```
 
-Notes
-- The migration script preserves verse ordering by verse_number.
-- Consumers should handle missing author/key and empty lyrics arrays.
-- `verse_text`/`refrain_text` semantics described in the README still apply (blank lines indicate possible slide breaks).
-
-### General syntax and information:
-- `refrain_position` usually 1 (a refrain after every verse). It can be 0 (a refrain before the first verse and after every verse) or 2 (an alternative refrain after the last verse).
-- `verse_text` and `refrain_text` can contain empty lines, indicating places where the verse can be split into two slides when the verse is too long.
-- `author` and `major_key` are not complete.
+- **Verse**: has `number` (verse order) and `text`. Blank lines within `text` indicate suggested slide splits for long verses.
+- **Refrain**: has `position` — `0` (before first verse and after every verse), `1` (after every verse), or `2` (alternative after last verse).
+- `author` and `key` may be `null` where unknown.
