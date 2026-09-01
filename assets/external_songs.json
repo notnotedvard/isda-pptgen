@@ -272,5 +272,132 @@
         "text": "Shine, Jesus shine,\nFill this land with the Father’s glory,\nBlaze, Spirit blaze,\nSet our hearts on fire.\nFlow, river flow,\nFlood the nations with grace and mercy,\nSend forth Your word,\nLord, and let there be light."
       }
     ]
+  },
+  {
+    "id": 9,
+    "name": "Above All",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "verse",
+        "label": "1",
+        "text": "Above all powers\nabove all kings\nAbove all nature\nand all created things\nAbove all wisdom\nand all the ways of man\nYou were here\nbefore the world began\n\nAbove all kingdoms\nabove all thrones\nAbove all wonders\nthe world has ever known\nAbove all wealth\nand treasures of the earth\nThere’s no way to measure\nwhat You’re worth"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "Crucified laid behind a stone\nYou lived to die rejected and alone\nLike a rose trampled on the ground\nYou took the fall and thought of me\nAbove all"
+      },
+      {
+        "type": "verse",
+        "label": "2",
+        "text": "Above all powers\nabove all kings\nAbove all nature\nand all created things\nAbove all wisdom\nand all the ways of man\nYou were here\nbefore the world began\n\nAbove all kingdoms\nabove all thrones\nAbove all wonders\nthe world has ever known\nAbove all wealth\nand treasures of the earth\nThere’s no way to measure\nwhat You’re worth"
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "Crucified laid behind a stone\nYou lived to die rejected and alone\nLike a rose trampled on the ground\nYou took the fall and thought of me\nAbove all"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Goodness of God",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "VERSE",
+        "label": "1",
+        "text": "I love You, Lord\nFor Your mercy never fails me\nAll my days, I've been held in Your hands\nFrom the moment that I wake up\nUntil I lay my head\nOh, I will sing of the goodness of God"
+      },
+      {
+        "type": "refrain",
+        "label": "CHORUS",
+        "text": "'Cause all my life You have been faithful\nAnd all my life You have been so, so good\nWith every breath that I am able\nOh, I will sing of the goodness of God"
+      },
+      {
+        "type": "VERSE",
+        "label": "2",
+        "text": "I love Your voice\nYou have led me through the fire\nIn darkest night\nYou are close like no other\nI've known You as a Father\nI've known You as a Friend\nAnd I have lived in the goodness of God"
+      },
+      {
+        "type": "bridge",
+        "label": "Bridge (x2)",
+        "text": "Your goodness is running after,\nit's running after me\nYour goodness is running after,\nit's running after me\nWith my life laid down, I surrendered now\nI give You everything\nYour goodness is running after,\nit's running after me"
+      },
+      {
+        "type": "verse",
+        "label": "3",
+        "text": "All my life You have been faithful\nAll my life You have been so, so good\nWith every breath that I am able \nOh, I will sing of the goodness of God"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "In Christ alone",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "verse",
+        "label": "1",
+        "text": "In Christ alone, my hope is found\nHe is my light, my strength, my song\nThis Cornerstone, this solid ground\nFirm through the fiercest drought and storm\n\nWhat heights of love, what depths of peace\nWhen fears are stilled, when strivings cease\nMy Comforter, my All in All\nHere in the love of Christ I stand\n\nIn Christ alone, who took on flesh\nFullness of God in helpless babe\nThis gift of love and righteousness\nScorned by the ones He came to save\n\n'Til on that cross as Jesus died\nThe wrath of God was satisfied\nFor every sin on Him was laid\nHere in the death of Christ I live\n\nOh-oh-oh-oh\nOh-oh-oh-oh\nOh-oh-oh-oh\nOh-oh-oh-oh\n\nThere in the ground His body lay\nLight of the world by darkness slain\nThen bursting forth in glorious day\nUp from the grave, He rose again\n\nAnd as He stands in victory\nSin's curse has lost its grip on me\nX2 For I am His and He is mine\nBought with the precious blood of Christ x2"
+      },
+      {
+        "type": "verse",
+        "label": "2",
+        "text": "What heights of love, what depths of peace\nWhen fears are stilled, when strivings cease\nMy Comforter, my All in All\nHere in the love of Christ I stand"
+      },
+      {
+        "type": "verse",
+        "label": "3",
+        "text": "In Christ alone, who took on flesh\nFullness of God in helpless babe\nThis gift of love and righteousness\nScorned by the ones He came to save"
+      },
+      {
+        "type": "verse",
+        "label": "4",
+        "text": "'Til on that cross as Jesus died\nThe wrath of God was satisfied\nFor every sin on Him was laid\nHere in the death of Christ I live\n\nOh-oh-oh-oh\nOh-oh-oh-oh\nOh-oh-oh-oh\nOh-oh-oh-oh"
+      },
+      {
+        "type": "verse",
+        "label": "5",
+        "text": "There in the ground His body lay\nLight of the world by darkness slain\nThen bursting forth in glorious day\nUp from the grave, He rose again"
+      },
+      {
+        "type": "verse",
+        "label": "6",
+        "text": "And as He stands in victory\nSin's curse has lost its grip on me\nX2 For I am His and He is mine\nBought with the precious blood of Christ x2"
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Here I am to worship",
+    "author": null,
+    "key": null,
+    "lyrics": [
+      {
+        "type": "Verse",
+        "label": "1",
+        "text": "Light of the world,\nYou stepped down into darkness,\nOpened my eyes, let me see\nBeauty that made this heart adore You,\nHope of a life spent with You."
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "So, here I am to worship,\nHere I am to bow down\nHere I am to say that You're my God!\nYou're altogether lovely, altogether worthy,\nAltogether wonderful to me!"
+      },
+      {
+        "type": "Verse",
+        "label": "2",
+        "text": "King of all days,\nOh so highly exalted,\nGlorious in Heaven above,\nHumbly You came to the earth You created,\nAll for love's sake became poor."
+      },
+      {
+        "type": "refrain",
+        "label": "Chorus",
+        "text": "So, here I am to worship,\nHere I am to bow down\nHere I am to say that You're my God\nYou're altogether lovely, altogether worthy\nAltogether wonderful to me!"
+      }
+    ]
   }
 ]
